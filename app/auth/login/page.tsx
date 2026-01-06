@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(searchParams.get('message') || '')
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push('/dashboard')

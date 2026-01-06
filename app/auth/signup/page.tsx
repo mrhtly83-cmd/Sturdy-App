@@ -19,7 +19,6 @@ export default function SignUpPage() {
     e.preventDefault()
     setError('')
 
-    // Validation
     if (!email || !password || !confirmPassword) {
       setError('All fields are required')
       return
@@ -44,7 +43,6 @@ export default function SignUpPage() {
       setPassword('')
       setConfirmPassword('')
       
-      // Redirect after 2 seconds
       setTimeout(() => {
         router.push('/auth/login?message=Check your email to confirm your account')
       }, 2000)
