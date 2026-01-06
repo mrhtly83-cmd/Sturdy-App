@@ -140,69 +140,85 @@ export default function DashboardPage() {
     }
   }
 
-  const generateScript = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setScriptError('')
-    setGeneratedScript('')
+ const generateScript = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setScriptError('')
+  setGeneratedScript('')
 
-    if (!selectedChild) {
-      setScriptError('Please select a child')
-      return
-    }
+  console.log('🚀 Generate script clicked')
+  console.log('selectedChild:', selectedChild)
+  console.log('situation:', situation)
+  console.log('user:', user?.id)
 
-    if (!situation.trim()) {
-      setScriptError('Please describe the situation')
-      return
-    }
-
-    if (!user) {
-      setScriptError('Not authenticated')
-      return
-    }
-
-    try {
-      setScriptLoading(true)
-
-      const child = children.find((c) => c.id === selectedChild)
-      if (!child) {
-        setScriptError('Child not found')
-        return
-      }
-
-      const childAge = child.birth_date
-        ? Math.floor(
-            (new Date().getTime() - new Date(child.birth_date).getTime()) /
-              (365.25 * 24 * 60 * 60 * 1000)
-          )
-        : 5
-
-      const response = await fetch('/api/generate-script', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childName: child.name,
-          situation: situation.trim(),
-          childAge: childAge,
-          userId: user.id,
-        }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to generate script')
-      }
-
-      const data = await response.json()
-      setGeneratedScript(data.script)
-    } catch (err) {
-      console.error('Script generation error:', err)
-      setScriptError(
-        err instanceof Error ? err.message : 'Failed to generate script'
-      )
-    } finally {
-      setScriptLoading(false)
-    }
+  if (!selectedChild) {
+    setScriptError('Please select a child')
+    return
   }
+
+  if (!situation.trim()) {
+    setScriptError('Please describe the situation')
+    return
+  }
+
+  if (!user) {
+    setScriptError('Not authenticated')
+    return
+  }
+
+  try {
+    setScriptLoading(true)
+
+    const child = children.find((c) => c.id === selectedChild)
+    console.log('Found child:', child)
+
+    if (!child) {
+      setScriptError('Child not found')
+      return
+    }
+
+    const childAge = child.birth_date
+      ? Math.floor(
+          (new Date().getTime() - new Date(child.birth_date).getTime()) /
+            (365.25 * 24 * 60 * 60 * 1000)
+        )
+      : 5
+
+    const payload = {
+      childId: selectedChild,
+      childName: child.name,
+      situation: situation.trim(),
+      childAge: childAge,
+      userId: user.id,
+    }
+
+    console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+
+    const response = await fetch('/api/generate-script', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    console.log('Response status:', response.status)
+
+    if (!response.ok) {
+      const data = await response.json()
+      console.error('API error response:', data)
+      throw new Error(data.error || 'Failed to generate script')
+    }
+
+    const data = await response.json()
+    console.log('✅ Script received:', data.script)
+    setGeneratedScript(data.script)
+  } catch (err) {
+    console.error('❌ Script generation error:', err)
+    setScriptError(
+      err instanceof Error ? err.message : 'Failed to generate script'
+    )
+  } finally {
+    setScriptLoading(false)
+  }
+}
 
   if (loading) {
     return (
