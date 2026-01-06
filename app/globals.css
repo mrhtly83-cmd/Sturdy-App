@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Styles */
 * {
   margin: 0;
   padding: 0;
@@ -27,7 +28,6 @@ code {
     monospace;
 }
 
-/* Focus styles for accessibility */
 :focus-visible {
   outline: 2px solid #14b8a6;
   outline-offset: 2px;
@@ -43,7 +43,6 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* Smooth transitions */
 a,
 button,
 input,
@@ -52,7 +51,6 @@ select {
   transition: all 0.2s ease-in-out;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -71,7 +69,6 @@ select {
   background: #94a3b8;
 }
 
-/* Typography */
 h1 {
   font-size: 2.25rem;
   font-weight: 700;
@@ -98,7 +95,6 @@ p {
   margin-bottom: 1rem;
 }
 
-/* Form elements */
 input,
 textarea,
 select {
@@ -111,7 +107,6 @@ textarea::placeholder {
   color: #9ca3af;
 }
 
-/* Button base styles */
 button {
   cursor: pointer;
   font-weight: 500;
@@ -125,7 +120,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Links */
 a {
   color: #14b8a6;
   text-decoration: none;
@@ -136,7 +130,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Utilities */
 .container {
   max-width: 1280px;
   margin: 0 auto;
@@ -155,7 +148,6 @@ a:hover {
   border-width: 0;
 }
 
-/* Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -184,17 +176,40 @@ a:hover {
   animation: slideUp 0.3s ease-in-out;
 }
 
-/* Responsive text sizes */
 @media (max-width: 768px) {
   h1 {
     font-size: 1.875rem;
   }
-
   h2 {
     font-size: 1.5rem;
   }
-
   h3 {
     font-size: 1.25rem;
   }
+}
+
+/* CENTERING UTILITIES */
+.page-center {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.page-center__inner {
+  width: 100%;
+  max-width: 760px;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.center-block {
+  width: 100%;
+}
+
+.center-text {
+  text-align: center;
 }

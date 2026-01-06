@@ -217,161 +217,152 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      {/* Header */}
-      <nav className="bg-white shadow-2xl border-b-4 border-teal-500">
-        <div className="w-full px-4 py-10">
-          <div className="max-w-7xl mx-auto">
-            {/* Top row: Title + Sign out */}
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-5xl font-bold text-teal-600">Sturdy</h1>
-              <button
-                onClick={signOut}
-                className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
-              >
-                Sign out
-              </button>
-            </div>
-
-            {/* Center: SOS Button */}
-            <div className="flex justify-center mb-4">
-              <button
-                onClick={() => setShowSOSModal(true)}
-                className="px-16 py-5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:shadow-2xl font-bold text-2xl shadow-lg hover:from-red-700 hover:to-red-800 transition transform hover:scale-105"
-              >
-                🆘 SOS BUTTON - NEED HELP?
-              </button>
-            </div>
-
-            {/* Subtitle */}
-            <p className="text-center text-gray-600 text-sm">Click when you need a parenting script in the moment</p>
+    <div className="page-center bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Sticky Header */}
+      <nav className="w-full bg-white shadow-2xl border-b-4 border-teal-500 sticky top-0 z-40">
+        <div className="page-center__inner py-6">
+          <div className="center-block flex justify-between items-center">
+            <h1 className="text-5xl font-black text-teal-600">Sturdy</h1>
+            <button
+              onClick={signOut}
+              className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
+      <main className="page-center__inner">
+        {/* SOS Button - Main CTA */}
+        <div className="center-block flex flex-col items-center gap-4">
+          <button
+            onClick={() => setShowSOSModal(true)}
+            className="px-20 py-8 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-3xl hover:shadow-2xl font-black text-4xl shadow-lg hover:from-red-700 hover:to-red-800 transition transform hover:scale-110 active:scale-95"
+          >
+            🆘 SOS BUTTON
+          </button>
+          <p className="center-text text-gray-600 text-lg font-semibold">
+            Click when you need a parenting script RIGHT NOW
+          </p>
+        </div>
+
+        {/* Error Banner */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
-            <p className="text-red-800 font-semibold">{error}</p>
+          <div className="center-block p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+            <p className="text-red-800 font-semibold text-lg">{error}</p>
             <button
               onClick={() => setError('')}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+              className="mt-3 text-sm text-red-600 hover:text-red-800 underline"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Add Child Form */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-teal-500">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Add Child</h2>
-            <form onSubmit={addChild} className="space-y-6">
-              {formError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800 font-medium">
-                  {formError}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Child's Name
-                </label>
-                <input
-                  type="text"
-                  value={newChildName}
-                  onChange={(e) => setNewChildName(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
-                  placeholder="e.g., Emma"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Age
-                </label>
-                <input
-                  type="number"
-                  value={newChildAge}
-                  onChange={(e) => setNewChildAge(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
-                  placeholder="e.g., 5"
-                  min="1"
-                  max="18"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full px-6 py-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-bold text-lg shadow-md hover:shadow-lg transition"
-              >
-                + Add Child
-              </button>
-            </form>
-          </div>
-
-          {/* Children List */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-teal-500">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Your Children</h2>
-            {childrenLoading ? (
-              <p className="text-gray-600 text-center py-12">Loading children...</p>
-            ) : children.length === 0 ? (
-              <p className="text-gray-600 text-center py-12 text-lg">No children added yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {children.map((child) => (
-                  <div key={child.id} className="p-5 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border-2 border-teal-200 hover:shadow-md transition">
-                    <p className="font-bold text-xl text-gray-900">{child.name}</p>
-                    <p className="text-base text-gray-600 mt-2">
-                      Age: {child.birth_date 
-                        ? Math.floor((new Date().getTime() - new Date(child.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-                        : 'Not set'}
-                    </p>
-                    {child.neurotype && (
-                      <p className="text-base text-gray-600">Neurotype: {child.neurotype}</p>
-                    )}
-                  </div>
-                ))}
+        {/* Add Child Form */}
+        <div className="center-block bg-white rounded-2xl shadow-xl p-10 border-t-4 border-teal-500">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 center-text">Add Child</h2>
+          <form onSubmit={addChild} className="space-y-6">
+            {formError && (
+              <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg text-sm text-red-800 font-medium">
+                {formError}
               </div>
             )}
-          </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Child's Name
+              </label>
+              <input
+                type="text"
+                value={newChildName}
+                onChange={(e) => setNewChildName(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
+                placeholder="e.g., Emma"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Age
+              </label>
+              <input
+                type="number"
+                value={newChildAge}
+                onChange={(e) => setNewChildAge(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
+                placeholder="e.g., 5"
+                min="1"
+                max="18"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full px-6 py-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-bold text-lg shadow-md hover:shadow-lg transition"
+            >
+              + Add Child
+            </button>
+          </form>
+        </div>
+
+        {/* Children List */}
+        <div className="center-block bg-white rounded-2xl shadow-xl p-10 border-t-4 border-teal-500">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 center-text">Your Children</h2>
+          {childrenLoading ? (
+            <p className="text-gray-600 center-text py-12 text-lg">Loading children...</p>
+          ) : children.length === 0 ? (
+            <p className="text-gray-600 center-text py-12 text-lg">No children added yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {children.map((child) => (
+                <div key={child.id} className="p-5 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border-2 border-teal-200 hover:shadow-md transition center-text">
+                  <p className="font-bold text-xl text-gray-900">{child.name}</p>
+                  <p className="text-base text-gray-600 mt-2">
+                    Age: {child.birth_date 
+                      ? Math.floor((new Date().getTime() - new Date(child.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                      : 'Not set'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Next Steps */}
-        <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-teal-500 mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Next Steps</h2>
+        <div className="center-block bg-white rounded-2xl shadow-xl p-10 border-t-4 border-teal-500">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 center-text">Next Steps</h2>
           <ul className="space-y-4">
-            <li className="flex items-center gap-3 text-lg text-gray-700">
+            <li className="flex items-center gap-4 text-lg text-gray-700 justify-center">
               <span className="text-3xl">✅</span> Add child profiles
             </li>
-            <li className="flex items-center gap-3 text-lg text-gray-700">
-              <span className="text-3xl">✅</span> Build SOS Button (script generation)
+            <li className="flex items-center gap-4 text-lg text-gray-700 justify-center">
+              <span className="text-3xl">✅</span> Build SOS Button
             </li>
-            <li className="flex items-center gap-3 text-lg text-gray-700">
-              <span className="text-3xl">⚡</span> Connect to OpenAI for script generation
+            <li className="flex items-center gap-4 text-lg text-gray-700 justify-center">
+              <span className="text-3xl">⚡</span> Connect to OpenAI
             </li>
-            <li className="flex items-center gap-3 text-lg text-gray-700">
-              <span className="text-3xl">🔗</span> Invite co-parents to collaborate
+            <li className="flex items-center gap-4 text-lg text-gray-700 justify-center">
+              <span className="text-3xl">🔗</span> Invite co-parents
             </li>
           </ul>
         </div>
 
         {/* Debug Info */}
-        <div className="bg-gray-800 rounded-xl text-gray-300 p-6 text-sm space-y-2">
-          <p><strong className="text-white">Logged in as:</strong> {user?.email}</p>
-          <p><strong className="text-white">User ID:</strong> {user?.id}</p>
+        <div className="center-block bg-gray-800 rounded-xl text-gray-300 p-6 text-sm space-y-2">
+          <p className="center-text"><strong className="text-white">Logged in:</strong> {user?.email}</p>
+          <p className="center-text"><strong className="text-white">User ID:</strong> {user?.id}</p>
         </div>
       </main>
 
       {/* SOS Modal */}
       {showSOSModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-8 flex justify-between items-center rounded-t-2xl">
-              <h2 className="text-3xl font-bold text-white">🆘 SOS Button</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[95vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-10 flex justify-between items-center rounded-t-3xl">
+              <h2 className="text-4xl font-black text-white">🆘 SOS</h2>
               <button
                 onClick={() => {
                   setShowSOSModal(false)
@@ -380,32 +371,31 @@ export default function DashboardPage() {
                   setSelectedChild('')
                   setScriptError('')
                 }}
-                className="text-white hover:bg-red-800 rounded-full w-10 h-10 flex items-center justify-center text-3xl font-bold"
+                className="text-white hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center text-4xl font-bold"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-8">
+            <div className="p-12">
               {!generatedScript ? (
-                <form onSubmit={generateScript} className="space-y-6">
+                <form onSubmit={generateScript} className="space-y-8">
                   {scriptError && (
-                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg text-sm text-red-800 font-medium">
-                      {scriptError}
+                    <div className="p-6 bg-red-50 border-2 border-red-200 rounded-xl text-base text-red-800 font-bold">
+                      ⚠️ {scriptError}
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Select Child
+                    <label className="block text-lg font-bold text-gray-800 mb-4">
+                      Which child?
                     </label>
                     <select
                       value={selectedChild}
                       onChange={(e) => setSelectedChild(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
+                      className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
                     >
-                      <option value="">Choose a child...</option>
+                      <option value="">Select a child...</option>
                       {children.map((child) => (
                         <option key={child.id} value={child.id}>
                           {child.name}
@@ -415,44 +405,44 @@ export default function DashboardPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      What's Happening Right Now?
+                    <label className="block text-lg font-bold text-gray-800 mb-4">
+                      What's happening?
                     </label>
                     <textarea
                       value={situation}
                       onChange={(e) => setSituation(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base"
-                      placeholder="Describe the situation you need help with..."
-                      rows={6}
+                      className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg"
+                      placeholder="Describe the situation..."
+                      rows={8}
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={scriptLoading}
-                    className="w-full px-6 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="w-full px-8 py-5 bg-red-600 text-white rounded-xl font-black text-2xl hover:bg-red-700 disabled:opacity-50"
                   >
-                    {scriptLoading ? '⏳ Generating script...' : '✨ Generate Script'}
+                    {scriptLoading ? '⏳ Generating...' : '✨ Generate Script'}
                   </button>
                 </form>
               ) : (
-                <div className="space-y-6">
-                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                    <p className="text-sm text-green-800 font-bold mb-3">✅ Script Generated</p>
-                    <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700 text-base leading-relaxed bg-white rounded p-4 border border-green-200">
+                <div className="space-y-8">
+                  <div className="bg-green-50 border-3 border-green-400 rounded-2xl p-8">
+                    <p className="text-center text-xl text-green-800 font-black mb-6">✅ HERE'S YOUR SCRIPT</p>
+                    <div className="bg-white rounded-xl p-6 border-2 border-green-300 whitespace-pre-wrap text-gray-800 text-lg leading-relaxed font-semibold">
                       {generatedScript}
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-4">
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(generatedScript)
-                        alert('✅ Script copied to clipboard!')
+                        alert('✅ Copied!')
                       }}
-                      className="flex-1 px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-semibold shadow-md hover:shadow-lg transition"
+                      className="w-full px-6 py-5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 font-bold text-xl"
                     >
-                      📋 Copy Script
+                      📋 Copy
                     </button>
                     <button
                       onClick={() => {
@@ -460,7 +450,7 @@ export default function DashboardPage() {
                         setSituation('')
                         setSelectedChild('')
                       }}
-                      className="flex-1 px-4 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-semibold shadow-md hover:shadow-lg transition"
+                      className="w-full px-6 py-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-xl"
                     >
                       🔄 Try Again
                     </button>
@@ -471,9 +461,9 @@ export default function DashboardPage() {
                         setSituation('')
                         setSelectedChild('')
                       }}
-                      className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold shadow-md hover:shadow-lg transition"
+                      className="w-full px-6 py-5 bg-gray-700 text-white rounded-xl hover:bg-gray-800 font-bold text-xl"
                     >
-                      ✓ Done
+                      ✓ Close
                     </button>
                   </div>
                 </div>
