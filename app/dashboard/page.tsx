@@ -1,5 +1,5 @@
 'use client'
-
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
@@ -236,18 +236,27 @@ export default function DashboardPage() {
     <div className="page-center bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Sticky Header */}
       <nav className="w-full bg-white shadow-2xl border-b-4 border-teal-500 sticky top-0 z-40">
-        <div className="page-center__inner py-6">
-          <div className="center-block flex justify-between items-center">
-            <h1 className="text-5xl font-black text-teal-600">Sturdy</h1>
-            <button
-              onClick={signOut}
-              className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </nav>
+  <div className="page-center__inner py-6">
+    <div className="center-block flex justify-between items-center">
+      <h1 className="text-5xl font-black text-teal-600">Sturdy</h1>
+      <div className="flex gap-4 items-center">
+        <Link
+          href="/dashboard/library"
+          className="px-6 py-2 text-sm font-medium text-teal-600 bg-teal-50 border border-teal-300 rounded-lg hover:bg-teal-100 transition"
+        >
+          📚 Library
+        </Link>
+        <button
+          onClick={signOut}
+          className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
 
       {/* Main Content */}
       <main className="page-center__inner">
