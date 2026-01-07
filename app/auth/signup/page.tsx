@@ -1,19 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 
 export default function SignUpPage() {
-  const router = useRouter()
   const { signUp } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,35 +34,12 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
+      // ✅ signUp() handles redirect to /onboarding automatically
       await signUp(email, password)
-      setSuccess(true)
-      setEmail('')
-      setPassword('')
-      setConfirmPassword('')
-      
-      setTimeout(() => {
-        router.push('/auth/login?message=Check your email to confirm your account')
-      }, 2000)
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')
-    } finally {
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 text-center">
-          <div>
-            <h2 className="mt-6 text-3xl font-bold text-gray-900">Check your email</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              We've sent you a confirmation link. Click it to verify your account.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
