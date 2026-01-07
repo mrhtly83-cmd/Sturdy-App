@@ -1,4 +1,5 @@
 'use client'
+
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -27,6 +28,8 @@ export default function DashboardPage() {
   const [generatedScript, setGeneratedScript] = useState('')
   const [scriptLoading, setScriptLoading] = useState(false)
   const [scriptError, setScriptError] = useState('')
+  const [struggle, setStruggle] = useState('')
+  const [tone, setTone] = useState('gentle')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -140,85 +143,77 @@ export default function DashboardPage() {
     }
   }
 
- const generateScript = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setScriptError('')
-  setGeneratedScript('')
+  const generateScript = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setScriptError('')
+    setGeneratedScript('')
 
-  console.log('🚀 Generate script clicked')
-  console.log('selectedChild:', selectedChild)
-  console.log('situation:', situation)
-  console.log('user:', user?.id)
-
-  if (!selectedChild) {
-    setScriptError('Please select a child')
-    return
-  }
-
-  if (!situation.trim()) {
-    setScriptError('Please describe the situation')
-    return
-  }
-
-  if (!user) {
-    setScriptError('Not authenticated')
-    return
-  }
-
-  try {
-    setScriptLoading(true)
-
-    const child = children.find((c) => c.id === selectedChild)
-    console.log('Found child:', child)
-
-    if (!child) {
-      setScriptError('Child not found')
+    if (!selectedChild) {
+      setScriptError('Please select a child')
       return
     }
 
-    const childAge = child.birth_date
-      ? Math.floor(
-          (new Date().getTime() - new Date(child.birth_date).getTime()) /
-            (365.25 * 24 * 60 * 60 * 1000)
-        )
-      : 5
-
-    const payload = {
-      childId: selectedChild,
-      childName: child.name,
-      situation: situation.trim(),
-      childAge: childAge,
-      userId: user.id,
+    if (!struggle) {
+      setScriptError('Please select a struggle type')
+      return
     }
 
-    console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+    if (!user) {
+      setScriptError('Not authenticated')
+      return
+    }
 
-    const response = await fetch('/api/generate-script', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+    try {
+      setScriptLoading(true)
 
-    console.log('Response status:', response.status)
+      const child = children.find((c) => c.id === selectedChild)
+      if (!child) {
+        setScriptError('Child not found')
+        return
+      }
 
-    if (!response.ok) {
+      const childAge = child.birth_date
+        ? Math.floor(
+            (new Date().getTime() - new Date(child.birth_date).getTime()) /
+              (365.25 * 24 * 60 * 60 * 1000)
+          )
+        : 5
+
+      const payload = {
+        childId: selectedChild,
+        childName: child.name,
+        childAge: childAge,
+        neurotype: child.neurotype || 'neurotypical',
+        struggle: struggle,
+        tone: tone,
+        situation: situation.trim() || `Having a ${struggle} moment`,
+        userId: user.id,
+      }
+
+      console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+
+      const response = await fetch('/api/generate-script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to generate script')
+      }
+
       const data = await response.json()
-      console.error('API error response:', data)
-      throw new Error(data.error || 'Failed to generate script')
+      setGeneratedScript(data.script)
+    } catch (err) {
+      console.error('Script generation error:', err)
+      setScriptError(
+        err instanceof Error ? err.message : 'Failed to generate script'
+      )
+    } finally {
+      setScriptLoading(false)
     }
-
-    const data = await response.json()
-    console.log('✅ Script received:', data.script)
-    setGeneratedScript(data.script)
-  } catch (err) {
-    console.error('❌ Script generation error:', err)
-    setScriptError(
-      err instanceof Error ? err.message : 'Failed to generate script'
-    )
-  } finally {
-    setScriptLoading(false)
   }
-}
 
   if (loading) {
     return (
@@ -236,27 +231,26 @@ export default function DashboardPage() {
     <div className="page-center bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Sticky Header */}
       <nav className="w-full bg-white shadow-2xl border-b-4 border-teal-500 sticky top-0 z-40">
-  <div className="page-center__inner py-6">
-    <div className="center-block flex justify-between items-center">
-      <h1 className="text-5xl font-black text-teal-600">Sturdy</h1>
-      <div className="flex gap-4 items-center">
-        <Link
-          href="/dashboard/library"
-          className="px-6 py-2 text-sm font-medium text-teal-600 bg-teal-50 border border-teal-300 rounded-lg hover:bg-teal-100 transition"
-        >
-          📚 Library
-        </Link>
-        <button
-          onClick={signOut}
-          className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
-        >
-          Sign out
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
-
+        <div className="page-center__inner py-6">
+          <div className="center-block flex justify-between items-center">
+            <h1 className="text-5xl font-black text-teal-600">Sturdy</h1>
+            <div className="flex gap-4 items-center">
+              <Link
+                href="/dashboard/library"
+                className="px-6 py-2 text-sm font-medium text-teal-600 bg-teal-50 border border-teal-300 rounded-lg hover:bg-teal-100 transition"
+              >
+                📚 Library
+              </Link>
+              <button
+                onClick={signOut}
+                className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
       <main className="page-center__inner">
@@ -346,8 +340,13 @@ export default function DashboardPage() {
                 <div key={child.id} className="p-5 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border-2 border-teal-200 hover:shadow-md transition center-text">
                   <p className="font-bold text-xl text-gray-900">{child.name}</p>
                   <p className="text-base text-gray-600 mt-2">
-                    Age: {child.birth_date 
-                      ? Math.floor((new Date().getTime() - new Date(child.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                    Age:{' '}
+                    {child.birth_date
+                      ? Math.floor(
+                          (new Date().getTime() -
+                            new Date(child.birth_date).getTime()) /
+                            (365.25 * 24 * 60 * 60 * 1000)
+                        )
                       : 'Not set'}
                   </p>
                 </div>
@@ -377,120 +376,207 @@ export default function DashboardPage() {
 
         {/* Debug Info */}
         <div className="center-block bg-gray-800 rounded-xl text-gray-300 p-6 text-sm space-y-2">
-          <p className="center-text"><strong className="text-white">Logged in:</strong> {user?.email}</p>
-          <p className="center-text"><strong className="text-white">User ID:</strong> {user?.id}</p>
+          <p className="center-text">
+            <strong className="text-white">Logged in:</strong> {user?.email}
+          </p>
+          <p className="center-text">
+            <strong className="text-white">User ID:</strong> {user?.id}
+          </p>
         </div>
       </main>
 
       {/* SOS Modal */}
-      {showSOSModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[95vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-10 flex justify-between items-center rounded-t-3xl">
-              <h2 className="text-4xl font-black text-white">🆘 SOS</h2>
+{showSOSModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[95vh] overflow-y-auto shadow-2xl">
+      {/* Modal Header */}
+      <div className="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-10 flex justify-between items-center rounded-t-3xl">
+        <h2 className="text-4xl font-black text-white">🆘 SOS</h2>
+        <button
+          onClick={() => {
+            setShowSOSModal(false)
+            setGeneratedScript('')
+            setSituation('')
+            setSelectedChild('')
+            setStruggle('')
+            setTone('gentle')
+            setScriptError('')
+          }}
+          className="text-white hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center text-4xl font-bold"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Modal Body */}
+      <div className="p-12">
+        {!generatedScript ? (
+          // FORM MODE
+          <form onSubmit={generateScript} className="space-y-8">
+            {scriptError && (
+              <div className="p-6 bg-red-50 border-2 border-red-200 rounded-xl text-base text-red-800 font-bold">
+                ⚠️ {scriptError}
+              </div>
+            )}
+
+            {/* FIELD 1: Child Selection */}
+            <div>
+              <label className="block text-lg font-bold text-gray-800 mb-4">
+                Which child?
+              </label>
+              <select
+                value={selectedChild}
+                onChange={(e) => setSelectedChild(e.target.value)}
+                className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
+              >
+                <option value="">Select a child...</option>
+                {children.map((child) => (
+                  <option key={child.id} value={child.id}>
+                    {child.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* FIELD 2: Struggle Category */}
+            <div>
+              <label className="block text-lg font-bold text-gray-800 mb-4">
+                What's the struggle?
+              </label>
+              <select
+                value={struggle}
+                onChange={(e) => setStruggle(e.target.value)}
+                className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
+              >
+                <option value="">Select a struggle type...</option>
+                <option value="aggression">🤛 Aggression (hitting, kicking)</option>
+                <option value="lying">🤥 Lying/Dishonesty</option>
+                <option value="bedtime">🛏️ Bedtime Resistance</option>
+                <option value="homework">📚 Homework Refusal</option>
+                <option value="screen-time">📱 Screen Time Battles</option>
+                <option value="tantrums">😤 Tantrums/Meltdowns</option>
+                <option value="sibling">👶 Sibling Conflict</option>
+                <option value="defiance">🚫 Defiance/Not Listening</option>
+              </select>
+            </div>
+
+            {/* FIELD 3: Tone Selector */}
+            <div>
+              <label className="block text-lg font-bold text-gray-800 mb-4">
+                What tone should it be?
+              </label>
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
+              >
+                <option value="gentle">🤗 Gentle & Empathetic</option>
+                <option value="firm">💪 Firm & Boundaried</option>
+                <option value="playful">🎭 Playful & Light</option>
+                <option value="calm">🧘 Calm & Grounded</option>
+              </select>
+            </div>
+
+            {/* FIELD 4: Situation Details */}
+            <div>
+              <label className="block text-lg font-bold text-gray-800 mb-4">
+                What's happening? (optional details)
+              </label>
+              <textarea
+                value={situation}
+                onChange={(e) => setSituation(e.target.value)}
+                className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg"
+                placeholder="Any extra context that might help..."
+                rows={6}
+              />
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              disabled={scriptLoading}
+              className="w-full px-8 py-5 bg-red-600 text-white rounded-xl font-black text-2xl hover:bg-red-700 disabled:opacity-50"
+            >
+              {scriptLoading ? '⏳ Generating...' : '✨ Generate Script'}
+            </button>
+          </form>
+        ) : (
+          // SCRIPT DISPLAY MODE
+          <div className="space-y-8">
+            {/* Generated Script Display */}
+            <div className="bg-green-50 border-3 border-green-400 rounded-2xl p-8">
+              <p className="text-center text-xl text-green-800 font-black mb-6">
+                ✅ HERE'S YOUR SOS SCRIPT
+              </p>
+              <div className="bg-white rounded-xl p-6 border-2 border-green-300 whitespace-pre-wrap text-gray-800 text-lg leading-relaxed font-semibold">
+                {generatedScript}
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex flex-col gap-4">
+              {/* Copy Button */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedScript)
+                  alert('✅ Copied!')
+                }}
+                className="w-full px-6 py-5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 font-bold text-xl"
+              >
+                📋 Copy
+              </button>
+
+              {/* NEW: What If Button - Plan Ahead */}
               <button
                 onClick={() => {
                   setShowSOSModal(false)
                   setGeneratedScript('')
                   setSituation('')
                   setSelectedChild('')
+                  setStruggle('')
+                  setTone('gentle')
                   setScriptError('')
+                  localStorage.setItem('whatIfData', JSON.stringify({
+                    childId: selectedChild,
+                    struggle: struggle,
+                    tone: tone,
+                  }))
+                  router.push('/dashboard/what-if')
                 }}
-                className="text-white hover:bg-red-800 rounded-full w-12 h-12 flex items-center justify-center text-4xl font-bold"
+                className="w-full px-6 py-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-xl"
               >
-                ✕
+                💡 Plan Ahead (What If)
               </button>
-            </div>
 
-            <div className="p-12">
-              {!generatedScript ? (
-                <form onSubmit={generateScript} className="space-y-8">
-                  {scriptError && (
-                    <div className="p-6 bg-red-50 border-2 border-red-200 rounded-xl text-base text-red-800 font-bold">
-                      ⚠️ {scriptError}
-                    </div>
-                  )}
+              {/* Try Another Scenario Button */}
+              <button
+                onClick={() => {
+                  setGeneratedScript('')
+                  setSituation('')
+                  setSelectedChild('')
+                  setStruggle('')
+                  setTone('gentle')
+                }}
+                className="w-full px-6 py-5 bg-orange-600 text-white rounded-xl hover:bg-orange-700 font-bold text-xl"
+              >
+                🔄 Try Another Scenario
+              </button>
 
-                  <div>
-                    <label className="block text-lg font-bold text-gray-800 mb-4">
-                      Which child?
-                    </label>
-                    <select
-                      value={selectedChild}
-                      onChange={(e) => setSelectedChild(e.target.value)}
-                      className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
-                    >
-                      <option value="">Select a child...</option>
-                      {children.map((child) => (
-                        <option key={child.id} value={child.id}>
-                          {child.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-lg font-bold text-gray-800 mb-4">
-                      What's happening?
-                    </label>
-                    <textarea
-                      value={situation}
-                      onChange={(e) => setSituation(e.target.value)}
-                      className="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg"
-                      placeholder="Describe the situation..."
-                      rows={8}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={scriptLoading}
-                    className="w-full px-8 py-5 bg-red-600 text-white rounded-xl font-black text-2xl hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {scriptLoading ? '⏳ Generating...' : '✨ Generate Script'}
-                  </button>
-                </form>
-              ) : (
-                <div className="space-y-8">
-                  <div className="bg-green-50 border-3 border-green-400 rounded-2xl p-8">
-                    <p className="text-center text-xl text-green-800 font-black mb-6">✅ HERE'S YOUR SCRIPT</p>
-                    <div className="bg-white rounded-xl p-6 border-2 border-green-300 whitespace-pre-wrap text-gray-800 text-lg leading-relaxed font-semibold">
-                      {generatedScript}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(generatedScript)
-                        alert('✅ Copied!')
-                      }}
-                      className="w-full px-6 py-5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 font-bold text-xl"
-                    >
-                      📋 Copy
-                    </button>
-                    <button
-                      onClick={() => {
-                        setGeneratedScript('')
-                        setSituation('')
-                        setSelectedChild('')
-                      }}
-                      className="w-full px-6 py-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-xl"
-                    >
-                      🔄 Try Again
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowSOSModal(false)
-                        setGeneratedScript('')
-                        setSituation('')
-                        setSelectedChild('')
-                      }}
-                      className="w-full px-6 py-5 bg-gray-700 text-white rounded-xl hover:bg-gray-800 font-bold text-xl"
-                    >
-                      ✓ Close
-                    </button>
-                  </div>
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowSOSModal(false)
+                  setGeneratedScript('')
+                  setSituation('')
+                  setSelectedChild('')
+                  setStruggle('')
+                  setTone('gentle')
+                }}
+                className="w-full px-6 py-5 bg-gray-700 text-white rounded-xl hover:bg-gray-800 font-bold text-xl"
+              >
+                ✓ Close
+              </button>
+                              </div>
                 </div>
               )}
             </div>
