@@ -1,13 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
+import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export async function POST(req: NextRequest) {
   try {
-    const { childName, childAge, childNeurotype, struggle, frequency, triggers } = await req.json()
+    const { childName, childAge, childNeurotype, struggle, frequency, triggers, userId } = await req.json()
+
+    // Validate required fields
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Missing userId' },
+        { status: 400 }
+      )
+    }
+
+    // Get user's subscription tier from database
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', userId)
+      .single()
+
+    const subscriptionTier = profile?.subscription_tier || 'free'
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(userId, subscriptionTier)
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded',
+          message: `You've used all ${rateLimit.limit} plans for this hour. ${
+            subscriptionTier === 'free'
+              ? 'Upgrade to Pro for more plans.'
+              : 'Please wait until rate limit resets.'
+          }`,
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          reset: rateLimit.reset,
+          tier: subscriptionTier,
+        },
+        { status: 429 }
+      )
+    }
 
     const prompt = `You are an expert parenting coach. Create a 3-part proactive plan for this situation:
 

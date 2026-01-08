@@ -6,6 +6,7 @@ import {
   generateSOSPrompt,
   generateWhatIfPrompt,
 } from './smart-prompts'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,7 +44,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`✅ All fields present. Generating ${mode} script...`)
+    // Get user's subscription tier from database
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', userId)
+      .single()
+
+    const subscriptionTier = profile?.subscription_tier || 'free'
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(userId, subscriptionTier)
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded',
+          message: `You've used all ${rateLimit.limit} scripts for this hour. ${
+            subscriptionTier === 'free'
+              ? 'Upgrade to Pro for more scripts.'
+              : 'Please wait until rate limit resets.'
+          }`,
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          reset: rateLimit.reset,
+          tier: subscriptionTier,
+        },
+        { status: 429 }
+      )
+    }
+
+    console.log(`✅ Rate limit check passed (${rateLimit.remaining}/${rateLimit.limit} remaining). Generating ${mode} script...`)
 
     // SELECT PROMPT BASED ON MODE
     const userPrompt =
