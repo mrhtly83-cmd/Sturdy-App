@@ -7,9 +7,11 @@ import {
   generateWhatIfPrompt,
 } from './smart-prompts'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { getUserSubscriptionTier } from '@/lib/subscription'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Lazy initialization to avoid build-time errors
-let supabase: ReturnType<typeof createClient> | null = null
+let supabase: SupabaseClient | null = null
 let openai: OpenAI | null = null
 
 function getSupabase() {
@@ -59,19 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's subscription tier from database
-    const { data: profile } = await getSupabase()
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', userId)
-      .single() as { data: { subscription_tier: string } | null }
-
-    let subscriptionTier: 'free' | 'pro' | 'family' = 'free'
-    if (profile && profile.subscription_tier) {
-      const tier = profile.subscription_tier
-      if (tier === 'free' || tier === 'pro' || tier === 'family') {
-        subscriptionTier = tier
-      }
-    }
+    const subscriptionTier = await getUserSubscriptionTier(userId)
 
     // Check rate limit
     const rateLimit = await checkRateLimit(userId, subscriptionTier)
@@ -146,19 +136,20 @@ export async function POST(request: NextRequest) {
 
     // SAVE TO DATABASE
     if (mode === 'what-if') {
+      const scriptData = {
+        parent_id: userId,
+        child_id: childId,
+        struggle: struggle,
+        context: context || '',
+        frequency: frequency || '',
+        tone: tone,
+        script: script,
+      }
+
+      // Type assertion needed due to Supabase generated types
       const { error: saveError } = await getSupabase()
         .from('what_if_scripts')
-        .insert([
-          {
-            parent_id: userId,
-            child_id: childId,
-            struggle: struggle,
-            context: context || '',
-            frequency: frequency || '',
-            tone: tone,
-            script: script,
-          },
-        ] as any)
+        .insert([scriptData] as any[])
 
       if (saveError) {
         console.error('Save to what_if_scripts error:', saveError)

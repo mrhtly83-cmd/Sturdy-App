@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
-import { createClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { getUserSubscriptionTier } from '@/lib/subscription'
 
 // Lazy initialization to avoid build-time errors
 let openai: OpenAI | null = null
-let supabase: ReturnType<typeof createClient> | null = null
 
 function getOpenAI() {
   if (!openai) {
@@ -14,16 +13,6 @@ function getOpenAI() {
     })
   }
   return openai
-}
-
-function getSupabase() {
-  if (!supabase) {
-    supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  }
-  return supabase
 }
 
 export async function POST(req: NextRequest) {
@@ -39,19 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user's subscription tier from database
-    const { data: profile } = await getSupabase()
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', userId)
-      .single() as { data: { subscription_tier: string } | null }
-
-    let subscriptionTier: 'free' | 'pro' | 'family' = 'free'
-    if (profile && profile.subscription_tier) {
-      const tier = profile.subscription_tier
-      if (tier === 'free' || tier === 'pro' || tier === 'family') {
-        subscriptionTier = tier
-      }
-    }
+    const subscriptionTier = await getUserSubscriptionTier(userId)
 
     // Check rate limit
     const rateLimit = await checkRateLimit(userId, subscriptionTier)
