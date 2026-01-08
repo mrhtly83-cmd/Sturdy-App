@@ -60,9 +60,9 @@ export default function HomePage() {
 
       {/* Floating decorative elements */}
       <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-coral-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/4 w-36 h-36 bg-teal-300/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl animate-float"></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-coral-500/10 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-1/4 w-36 h-36 bg-teal-300/10 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
 
       {/* Content Layer - Centered Mobile-First Design */}
@@ -101,11 +101,7 @@ export default function HomePage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="backdrop-blur-xl bg-white/10 border border-white/30 rounded-3xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl cursor-pointer group shadow-lg"
-              style={{ 
-                animationDelay: `${index * 0.1}s`,
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
-              }}
+              className="backdrop-blur-xl bg-white/10 border border-white/30 rounded-3xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl cursor-pointer group shadow-xl"
             >
               <div className="flex items-start gap-4">
                 <div className="text-5xl flex-shrink-0 transform group-hover:scale-110 transition-transform">{feature.icon}</div>
@@ -132,8 +128,9 @@ export default function HomePage() {
 
           <button
             onClick={() => {
-              // Open demo video in modal or navigate to demo page
-              window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+              // TODO: Replace with actual demo video URL when available
+              // For now, navigate to pricing page as alternative
+              router.push('/pricing');
             }}
             className="w-full md:w-auto px-10 py-4 backdrop-blur-md bg-white/10 border-2 border-white/30 hover:bg-white/20 hover:border-white/50 text-white font-bold text-lg rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
@@ -164,11 +161,7 @@ export default function HomePage() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-5 shadow-lg"
-              style={{ 
-                animationDelay: `${index * 0.15}s`,
-                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.25)'
-              }}
+              className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-5 shadow-xl"
             >
               <div className="flex gap-1 mb-3">
                 {[...Array(testimonial.rating)].map((_, i) => (
