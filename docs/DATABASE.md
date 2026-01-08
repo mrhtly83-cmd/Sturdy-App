@@ -1,12 +1,14 @@
-# Database Documentation
+# Sturdy App - Database Documentation
 
 ## Overview
 
-Sturdy uses **PostgreSQL** via **Supabase** for all data persistence. The database schema includes four main tables with Row Level Security (RLS) policies to ensure data privacy and security.
+Sturdy uses **PostgreSQL** via **Supabase** for all data persistence. The database schema includes **8 tables** with Row Level Security (RLS) policies to ensure data privacy and security.
+
+This document describes the actual production database structure from Supabase, including all tables, columns, relationships, and security policies.
 
 ---
 
-## Tables
+## Database Tables
 
 ### 1. **profiles**
 
@@ -16,26 +18,22 @@ Sturdy uses **PostgreSQL** via **Supabase** for all data persistence. The databa
 ```sql
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT UNIQUE NOT NULL,
-  full_name TEXT,
-  avatar_url TEXT,
-  subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'family')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  email TEXT,
+  subscription_tier TEXT DEFAULT 'free',
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 ```
 
 **Columns:**
 - `id`: UUID primary key, references Supabase auth.users(id)
-- `email`: User's email (unique, required)
-- `full_name`: Optional display name
-- `avatar_url`: Optional profile picture URL
-- `subscription_tier`: One of 'free', 'pro', 'family' (default: 'free')
+- `email`: User's email address
+- `subscription_tier`: Subscription level (default: 'free')
 - `created_at`: Timestamp when profile was created
-- `updated_at`: Timestamp when profile was last updated (auto-updated)
+- `updated_at`: Timestamp when profile was last updated (auto-updated via trigger)
 
 **Relationships:**
-- Parent to `children`, `scripts`, `what_if_scripts`
+- Parent to: `children`, `scripts`, `plans`, `script_feedback`, `family_invites`
 - Cascading delete: When auth.users record is deleted, profile is automatically deleted
 
 ---
@@ -49,36 +47,27 @@ CREATE TABLE profiles (
 CREATE TABLE children (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
+  name TEXT,
   birth_date DATE,
   neurotype TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 ```
 
 **Columns:**
 - `id`: UUID primary key (auto-generated)
-- `parent_id`: Foreign key to profiles.id (required)
-- `name`: Child's name (required)
-- `birth_date`: Child's date of birth (optional)
-- `neurotype`: Child's neurotype (e.g., 'ADHD', 'Autistic', 'Neurotypical', optional)
+- `parent_id`: Foreign key to profiles.id
+- `name`: Child's name
+- `birth_date`: Child's date of birth
+- `neurotype`: Child's neurotype (e.g., 'ADHD', 'Autistic', 'Neurotypical')
 - `created_at`: Timestamp when child profile was created
-- `updated_at`: Timestamp when child profile was last updated (auto-updated)
+- `updated_at`: Timestamp when child profile was last updated (auto-updated via trigger)
 
 **Relationships:**
-- Child of `profiles`
-- Parent to `scripts`, `what_if_scripts`
+- Child of: `profiles`
+- Parent to: `scripts`, `plans`
 - Cascading delete: When parent profile is deleted, all children are deleted
-
-**Common Neurotypes:**
-- `Neurotypical`
-- `ADHD`
-- `Autistic`
-- `PDA` (Pathological Demand Avoidance)
-- `Anxious`
-- `Highly Sensitive`
-- `Gifted`
 
 ---
 
@@ -92,82 +81,225 @@ CREATE TABLE scripts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
-  situation TEXT NOT NULL,
-  script_text TEXT NOT NULL,
+  situation TEXT,
+  script_text TEXT,
+  validation TEXT,
+  reframe TEXT,
+  script_language TEXT,
+  psych_insight TEXT,
   tone TEXT,
-  helpful_rating BOOLEAN,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  user_rating INTEGER,
+  user_helpful BOOLEAN,
+  generated_script TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 ```
 
 **Columns:**
 - `id`: UUID primary key (auto-generated)
-- `parent_id`: Foreign key to profiles.id (required)
-- `child_id`: Foreign key to children.id (required)
-- `situation`: The crisis situation described by parent (required)
-- `script_text`: The generated AI script (required)
-- `tone`: Tone selected by parent (e.g., 'gentle', 'firm', 'playful')
-- `helpful_rating`: Boolean feedback - was the script helpful? (optional)
+- `parent_id`: Foreign key to profiles.id
+- `child_id`: Foreign key to children.id
+- `situation`: The crisis situation described by parent
+- `script_text`: The generated AI script
+- `validation`: Validation component of the script
+- `reframe`: Reframe component of the script
+- `script_language`: Language used for the script
+- `psych_insight`: Psychological insights included
+- `tone`: Tone used in the script (e.g., 'gentle', 'firm', 'playful')
+- `user_rating`: User's rating of the script (integer)
+- `user_helpful`: Boolean feedback - was the script helpful?
+- `generated_script`: Full generated script text
 - `created_at`: Timestamp when script was generated
+- `updated_at`: Timestamp when script was last updated (auto-updated via trigger)
 
 **Relationships:**
-- Child of `profiles` and `children`
+- Child of: `profiles` and `children`
+- Parent to: `script_feedback`
 - Cascading delete: Deleted when parent or child is deleted
-
-**Immutability:** Scripts are immutable once created (no UPDATE policy)
 
 ---
 
-### 4. **what_if_scripts**
+### 4. **plans** (What If Scripts)
 
 **Purpose:** Stores What If scripts for proactive planning of anticipated struggles.
 
+**⚠️ IMPORTANT:** This table uses `user_id` instead of `parent_id` (different from scripts table!)
+
 **Schema:**
 ```sql
-CREATE TABLE what_if_scripts (
+CREATE TABLE plans (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
-  struggle TEXT NOT NULL,
-  context TEXT,
+  struggle TEXT,
   frequency TEXT,
-  tone TEXT,
-  script TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  triggers TEXT,
+  prevention TEXT,
+  intervention TEXT,
+  escalation TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 ```
 
 **Columns:**
 - `id`: UUID primary key (auto-generated)
-- `parent_id`: Foreign key to profiles.id (required)
-- `child_id`: Foreign key to children.id (required)
-- `struggle`: The anticipated struggle (required)
-- `context`: Additional context about the struggle (optional)
-- `frequency`: How often the struggle occurs (optional)
-- `tone`: Tone selected by parent (optional)
-- `script`: The generated AI planning script (required)
-- `created_at`: Timestamp when script was generated
+- `user_id`: Foreign key to profiles.id (**NOTE: uses `user_id`, NOT `parent_id`**)
+- `child_id`: Foreign key to children.id
+- `struggle`: The anticipated struggle
+- `frequency`: How often the struggle occurs
+- `triggers`: Known triggers for the struggle
+- `prevention`: Prevention strategies
+- `intervention`: Intervention strategies
+- `escalation`: De-escalation strategies
+- `created_at`: Timestamp when plan was created
+- `updated_at`: Timestamp when plan was last updated (auto-updated via trigger)
 
 **Relationships:**
-- Child of `profiles` and `children`
-- Cascading delete: Deleted when parent or child is deleted
+- Child of: `profiles` (via `user_id`) and `children`
+- Cascading delete: Deleted when user or child is deleted
 
-**Immutability:** What If scripts are immutable once created
+**Key Difference:** RLS policies check `auth.uid() = user_id` (not `parent_id`)
+
+---
+
+### 5. **script_feedback**
+
+**Purpose:** Stores detailed feedback about scripts from parents.
+
+**Schema:**
+```sql
+CREATE TABLE script_feedback (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  script_id UUID NOT NULL REFERENCES scripts(id) ON DELETE CASCADE,
+  helpful BOOLEAN,
+  child_response TEXT,
+  rating INTEGER,
+  notes TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+```
+
+**Columns:**
+- `id`: UUID primary key (auto-generated)
+- `parent_id`: Foreign key to profiles.id
+- `script_id`: Foreign key to scripts.id
+- `helpful`: Boolean - was the script helpful?
+- `child_response`: Description of how child responded
+- `rating`: Numeric rating of the script
+- `notes`: Additional feedback notes
+- `created_at`: Timestamp when feedback was created
+
+**Relationships:**
+- Child of: `profiles` and `scripts`
+- Cascading delete: Deleted when parent or script is deleted
+
+---
+
+### 6. **family_invites**
+
+**Purpose:** Manages family sharing invitations between users.
+
+**Schema:**
+```sql
+CREATE TABLE family_invites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  inviter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  invitee_email TEXT,
+  family_join_code UUID,
+  accepted BOOLEAN,
+  accepted_at TIMESTAMP WITHOUT TIME ZONE,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+```
+
+**Columns:**
+- `id`: UUID primary key (auto-generated)
+- `inviter_id`: Foreign key to profiles.id (user who sent invite)
+- `invitee_email`: Email address of invited user
+- `family_join_code`: Unique UUID for the family invitation
+- `accepted`: Boolean - has invite been accepted?
+- `accepted_at`: Timestamp when invite was accepted
+- `created_at`: Timestamp when invite was created
+
+**Relationships:**
+- Child of: `profiles` (via `inviter_id`)
+- Cascading delete: Deleted when inviter profile is deleted
+
+---
+
+### 7. **struggle_categories**
+
+**Purpose:** Stores predefined categories of common childhood struggles for classification.
+
+**Schema:**
+```sql
+CREATE TABLE struggle_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  category TEXT,
+  description TEXT,
+  keywords TEXT[],
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+```
+
+**Columns:**
+- `id`: UUID primary key (auto-generated)
+- `category`: Name of the struggle category
+- `description`: Description of the category
+- `keywords`: Array of keywords associated with the category
+- `created_at`: Timestamp when category was created
+
+**Relationships:**
+- Parent to: `struggle_keywords`
+
+**Access:** Public read access (anyone can view categories)
+
+---
+
+### 8. **struggle_keywords**
+
+**Purpose:** Stores individual keywords linked to struggle categories for better matching.
+
+**Schema:**
+```sql
+CREATE TABLE struggle_keywords (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  struggle_id UUID NOT NULL REFERENCES struggle_categories(id) ON DELETE CASCADE,
+  keyword TEXT,
+  keyword_type TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+```
+
+**Columns:**
+- `id`: UUID primary key (auto-generated)
+- `struggle_id`: Foreign key to struggle_categories.id
+- `keyword`: Individual keyword text
+- `keyword_type`: Type/classification of the keyword
+- `created_at`: Timestamp when keyword was created
+
+**Relationships:**
+- Child of: `struggle_categories`
+- Cascading delete: Deleted when parent category is deleted
+
+**Security Note:** RLS policy was added to fix security gap (previously unrestricted)
 
 ---
 
 ## Row Level Security (RLS) Policies
 
-All tables have RLS enabled to ensure data privacy. Users can only access their own data.
+All tables have RLS enabled to ensure data privacy and security.
 
 ### **profiles** Policies
 
 | Policy Name | Operation | Rule |
 |-------------|-----------|------|
-| Users can view own profile | SELECT | auth.uid() = id |
-| Users can update own profile | UPDATE | auth.uid() = id |
-
-**Note:** No INSERT policy (handled by Supabase auth trigger), no DELETE policy (handled by auth system)
+| Users can view their own profile | SELECT | auth.uid() = id |
+| Allow users to insert their own profile | INSERT | auth.uid() = id |
+| Allow users to update their own profile | UPDATE | auth.uid() = id |
 
 ---
 
@@ -175,12 +307,9 @@ All tables have RLS enabled to ensure data privacy. Users can only access their 
 
 | Policy Name | Operation | Rule |
 |-------------|-----------|------|
-| Parents can view own children | SELECT | auth.uid() = parent_id |
-| Parents can insert own children | INSERT | auth.uid() = parent_id |
-| Parents can update own children | UPDATE | auth.uid() = parent_id |
-| Parents can delete own children | DELETE | auth.uid() = parent_id |
-
-**Behavior:** Parents have full CRUD access to their children's profiles, but cannot access other parents' children.
+| Users can view their own children | SELECT | auth.uid() = parent_id |
+| Users can insert their own children | INSERT | auth.uid() = parent_id |
+| Users can update their own children | UPDATE | auth.uid() = parent_id |
 
 ---
 
@@ -188,28 +317,64 @@ All tables have RLS enabled to ensure data privacy. Users can only access their 
 
 | Policy Name | Operation | Rule |
 |-------------|-----------|------|
-| Parents can view own scripts | SELECT | auth.uid() = parent_id |
-| Parents can insert own scripts | INSERT | auth.uid() = parent_id |
-| Parents can delete own scripts | DELETE | auth.uid() = parent_id |
-
-**Note:** No UPDATE policy (scripts are immutable)
+| Users can view own scripts | SELECT | auth.uid() = parent_id |
+| Users can insert own scripts | INSERT | auth.uid() = parent_id |
+| Users can update their own scripts | UPDATE | auth.uid() = parent_id |
 
 ---
 
-### **what_if_scripts** Policies
+### **plans** Policies
+
+⚠️ **Note:** Plans table uses `user_id` field (not `parent_id`)
 
 | Policy Name | Operation | Rule |
 |-------------|-----------|------|
-| Parents can view own what_if_scripts | SELECT | auth.uid() = parent_id |
-| Parents can insert own what_if_scripts | INSERT | auth.uid() = parent_id |
-
-**Note:** No UPDATE or DELETE policies (scripts are immutable)
+| Users can view own plans | SELECT | auth.uid() = user_id |
+| Users can create own plans | INSERT | auth.uid() = user_id |
+| Users can update own plans | UPDATE | auth.uid() = user_id |
+| Users can delete own plans | DELETE | auth.uid() = user_id |
 
 ---
 
-## Indexes
+### **script_feedback** Policies
 
-Performance indexes are created on frequently queried columns:
+| Policy Name | Operation | Rule |
+|-------------|-----------|------|
+| Users can view their feedback | SELECT | auth.uid() = parent_id |
+
+---
+
+### **family_invites** Policies
+
+| Policy Name | Operation | Rule |
+|-------------|-----------|------|
+| Users can view their invites | SELECT | auth.uid() = inviter_id |
+
+---
+
+### **struggle_categories** Policies
+
+| Policy Name | Operation | Rule |
+|-------------|-----------|------|
+| Anyone can read categories | SELECT | true |
+
+**Access:** Public read-only access
+
+---
+
+### **struggle_keywords** Policies
+
+| Policy Name | Operation | Rule |
+|-------------|-----------|------|
+| Anyone can read keywords | SELECT | true |
+
+**Security Fix:** This policy was added to fix a security gap. Previously, this table had no RLS policies (unrestricted access).
+
+---
+
+## Performance Indexes
+
+Indexes are created on foreign keys and frequently queried columns:
 
 ```sql
 -- Children
@@ -218,23 +383,31 @@ CREATE INDEX idx_children_parent_id ON children(parent_id);
 -- Scripts
 CREATE INDEX idx_scripts_parent_id ON scripts(parent_id);
 CREATE INDEX idx_scripts_child_id ON scripts(child_id);
-CREATE INDEX idx_scripts_created_at ON scripts(created_at DESC);
 
--- What If Scripts
-CREATE INDEX idx_what_if_scripts_parent_id ON what_if_scripts(parent_id);
-CREATE INDEX idx_what_if_scripts_child_id ON what_if_scripts(child_id);
-CREATE INDEX idx_what_if_scripts_created_at ON what_if_scripts(created_at DESC);
+-- Plans
+CREATE INDEX idx_plans_user_id ON plans(user_id);
+CREATE INDEX idx_plans_child_id ON plans(child_id);
+
+-- Script Feedback
+CREATE INDEX idx_script_feedback_parent_id ON script_feedback(parent_id);
+CREATE INDEX idx_script_feedback_script_id ON script_feedback(script_id);
+
+-- Family Invites
+CREATE INDEX idx_family_invites_inviter_id ON family_invites(inviter_id);
+
+-- Struggle Keywords
+CREATE INDEX idx_struggle_keywords_struggle_id ON struggle_keywords(struggle_id);
 ```
 
-**Purpose:** Speed up queries filtering by parent_id, child_id, and sorting by creation date.
+**Purpose:** Speed up queries filtering by foreign keys and improve JOIN performance.
 
 ---
 
-## Triggers
+## Database Triggers
 
-### Auto-update Timestamps
+### Auto-update `updated_at` Timestamps
 
-The `updated_at` column is automatically updated on `profiles` and `children` tables using a PostgreSQL trigger:
+The `updated_at` column is automatically updated using a PostgreSQL trigger:
 
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -246,202 +419,197 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-Applied to:
+**Applied to:**
 - `profiles.updated_at`
 - `children.updated_at`
+- `scripts.updated_at`
+- `plans.updated_at`
 
 ---
 
-## Local Setup
+## Local Development Setup
 
 ### Prerequisites
-- Supabase account (free tier available)
-- PostgreSQL knowledge (basic)
+- Supabase account (free tier available at https://supabase.com)
+- Basic PostgreSQL knowledge
 
-### Setup Steps
+### Setup Instructions
 
-1. **Create Supabase Project**
+1. **Create a New Supabase Project**
    - Go to https://supabase.com/dashboard
    - Click "New Project"
-   - Choose a name, database password, and region
-   - Wait for project to finish setting up (~2 minutes)
+   - Enter project name, database password, and select region
+   - Wait for project initialization (~2 minutes)
 
-2. **Run Schema Migration**
+2. **Restore Database Schema**
    - Open your Supabase project dashboard
-   - Navigate to: SQL Editor (left sidebar)
+   - Navigate to: **SQL Editor** (left sidebar)
    - Click "New Query"
-   - Copy the entire contents of `/docs/schema.sql`
+   - Open `/docs/schema.sql` from this repository
+   - Copy the entire contents
    - Paste into the SQL Editor
    - Click "Run" (or press Cmd/Ctrl + Enter)
 
 3. **Verify Tables Created**
-   - Navigate to: Table Editor (left sidebar)
-   - You should see 4 tables: `profiles`, `children`, `scripts`, `what_if_scripts`
-   - Click on each table to verify structure
+   - Navigate to: **Table Editor** (left sidebar)
+   - You should see 8 tables:
+     - `profiles`
+     - `children`
+     - `scripts`
+     - `plans`
+     - `script_feedback`
+     - `family_invites`
+     - `struggle_categories`
+     - `struggle_keywords`
 
-4. **Verify RLS Enabled**
-   - Click on a table in Table Editor
-   - Look for "Row Level Security" badge (should show "Enabled")
-   - Click on "Policies" tab
-   - Verify policies are listed
+4. **Verify RLS Policies**
+   - Click on each table in Table Editor
+   - Check "Row Level Security" is enabled
+   - Click "Policies" tab to see policies
 
 5. **Get API Credentials**
-   - Navigate to: Settings → API (left sidebar)
-   - Copy these values to your `.env.local`:
-     - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
-     - `anon` `public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-     - `service_role` `secret` key → `SUPABASE_SERVICE_ROLE_KEY`
+   - Navigate to: **Settings → API** (left sidebar)
+   - Copy these values to your `.env.local` file:
+     ```
+     NEXT_PUBLIC_SUPABASE_URL=your-project-url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+     SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+     ```
 
 6. **Test the Setup**
-   - Sign up a test user via your app's auth flow
-   - Check that a profile is automatically created
-   - Try creating a child profile
+   - Run your application
+   - Sign up a test user
+   - Verify profile is created automatically
+   - Create a child profile
+   - Generate a script
    - Verify RLS prevents unauthorized access
 
 ---
 
-## Testing RLS Policies
+## How to Restore from schema.sql
 
-### Test User Isolation
+If you need to restore or recreate the database:
 
-1. Create two test users (User A and User B)
-2. As User A: Create a child profile
-3. As User B: Try to query User A's child
-4. Expected: User B should see zero results (RLS blocks access)
+1. **Using Supabase Dashboard:**
+   - Navigate to SQL Editor
+   - Create a new query
+   - Copy contents of `/docs/schema.sql`
+   - Paste and click "Run"
 
-### Test Service Role Bypass
+2. **Using Supabase CLI:**
+   ```bash
+   supabase db reset
+   supabase db push
+   ```
 
-Service role key bypasses RLS (admin access):
-```typescript
-// Uses service_role key - bypasses RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ Server-side only!
-)
-
-// Can access all data
-const { data } = await supabase.from('children').select('*')
-```
-
-**Security:** Never expose service_role key to client-side code!
+3. **For Fresh Installation:**
+   - Simply run the entire `schema.sql` file in SQL Editor
+   - All tables, indexes, policies, and triggers will be created
 
 ---
 
-## Backup and Recovery
+## Important Notes
 
-### Export Schema
+### Plans Table Uses `user_id`
 
-Use the provided `schema.sql` file to recreate the database structure at any time.
+⚠️ **Critical:** The `plans` table uses `user_id` instead of `parent_id`:
+- Most tables use `parent_id` (scripts, children, script_feedback, family_invites)
+- **Plans table uses `user_id`** for foreign key to profiles
+- RLS policies check `auth.uid() = user_id` (not `parent_id`)
+- Keep this in mind when writing queries or RLS policies
 
-### Export Data
+### Timestamp Format
 
-Via Supabase Dashboard:
-1. Navigate to: Table Editor
-2. Click on a table
-3. Click "..." (three dots) → "Download as CSV"
-4. Repeat for all tables
+All timestamps use `TIMESTAMP WITHOUT TIME ZONE`:
+- Not `TIMESTAMP WITH TIME ZONE`
+- Stored in UTC
+- Convert to local timezone in application layer
 
-Via Supabase CLI:
-```bash
-supabase db dump -f backup.sql
-```
+### Security Fix Applied
 
-### Restore from Backup
-
-```bash
-# Run SQL file in Supabase dashboard SQL Editor
-# Or use Supabase CLI:
-supabase db reset
-supabase db push
-```
+The `struggle_keywords` table had a security gap (no RLS policies). This has been fixed:
+- Added policy: "Anyone can read keywords" (SELECT: true)
+- Previously: unrestricted access (security risk)
+- Now: proper RLS policy enforced
 
 ---
 
 ## Common Queries
 
-### Get all children for a parent
+### Get all children for a user
 ```sql
 SELECT * FROM children 
-WHERE parent_id = '...' 
+WHERE parent_id = auth.uid() 
 ORDER BY created_at DESC;
 ```
 
-### Get all scripts for a child
+### Get all plans for a user (note: uses user_id!)
 ```sql
-SELECT * FROM scripts 
-WHERE child_id = '...' 
+SELECT * FROM plans 
+WHERE user_id = auth.uid() 
 ORDER BY created_at DESC;
 ```
 
-### Get subscription tier for a user
+### Get scripts with child info
 ```sql
-SELECT subscription_tier FROM profiles 
-WHERE id = '...';
+SELECT s.*, c.name as child_name 
+FROM scripts s
+JOIN children c ON s.child_id = c.id
+WHERE s.parent_id = auth.uid()
+ORDER BY s.created_at DESC;
 ```
 
-### Count scripts by parent
+### Get struggle categories with keywords
 ```sql
-SELECT COUNT(*) FROM scripts 
-WHERE parent_id = '...';
+SELECT sc.*, 
+  (SELECT json_agg(sk.*) FROM struggle_keywords sk WHERE sk.struggle_id = sc.id) as keywords
+FROM struggle_categories sc;
 ```
 
 ---
 
 ## Security Best Practices
 
-1. **Never bypass RLS on client-side:** Always use anon key for client queries
-2. **Service role = admin access:** Only use service_role key on secure server-side code
-3. **Validate user input:** Always validate data before inserting into database
-4. **Use prepared statements:** Supabase client handles this automatically
-5. **Monitor usage:** Check Supabase dashboard for unusual query patterns
-6. **Regular backups:** Export data weekly during active development
+1. **Use anon key for client-side:** Never use service_role key in client code
+2. **Service role bypasses RLS:** Only use on secure server-side code
+3. **Validate all inputs:** Check data before inserting
+4. **Monitor access patterns:** Review logs regularly
+5. **Regular backups:** Export data frequently
+6. **Test RLS policies:** Verify users can't access other users' data
 
 ---
 
 ## Troubleshooting
 
 ### "new row violates row-level security policy"
-- **Cause:** Trying to insert/update data that doesn't match RLS policy
-- **Solution:** Ensure `parent_id` or `child_id` matches authenticated user's ID
+- **Cause:** Trying to insert/update data that violates RLS rules
+- **Solution:** Ensure foreign keys match authenticated user's ID
+- **For plans:** Remember to use `user_id` not `parent_id`
 
 ### "relation does not exist"
-- **Cause:** Schema not created or wrong database selected
+- **Cause:** Schema not created
 - **Solution:** Run `/docs/schema.sql` in SQL Editor
 
 ### "permission denied for table"
 - **Cause:** Using anon key for admin operations
-- **Solution:** Use service_role key for server-side admin queries
+- **Solution:** Use service_role key for server-side queries
 
-### Slow queries
-- **Cause:** Missing indexes or inefficient query
-- **Solution:** Check query plan, ensure indexes exist, add pagination
-
----
-
-## Migration Path
-
-If updating from an older schema:
-
-1. Export existing data
-2. Create backup of production database
-3. Run new schema in test environment
-4. Test thoroughly
-5. Schedule maintenance window
-6. Run migration in production
-7. Verify data integrity
-8. Monitor for errors
+### Plans not showing up
+- **Cause:** Querying with `parent_id` instead of `user_id`
+- **Solution:** Use `WHERE user_id = auth.uid()` for plans table
 
 ---
 
-## Contact
+## Database Version
 
-For database-related questions or issues:
-- Check Supabase documentation: https://supabase.com/docs
-- Review this file: `/docs/DATABASE.md`
-- Review schema: `/docs/schema.sql`
+- **Last Updated:** January 2026
+- **PostgreSQL Version:** 15.x (via Supabase)
+- **Schema Version:** 2.0.0 (production export)
 
 ---
 
-**Last Updated:** January 2026  
-**Schema Version:** 1.0.0  
-**Supabase Version:** PostgreSQL 15.x
+## Contact & Resources
+
+- **Supabase Documentation:** https://supabase.com/docs
+- **Schema File:** `/docs/schema.sql`
+- **This File:** `/docs/DATABASE.md`
