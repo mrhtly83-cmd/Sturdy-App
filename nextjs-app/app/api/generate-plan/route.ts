@@ -3,14 +3,28 @@ import { OpenAI } from 'openai'
 import { createClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/lib/rate-limit'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization to avoid build-time errors
+let openai: OpenAI | null = null
+let supabase: ReturnType<typeof createClient> | null = null
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
+
+function getSupabase() {
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabase
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,13 +39,19 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user's subscription tier from database
-    const { data: profile } = await supabase
+    const { data: profile } = await getSupabase()
       .from('profiles')
       .select('subscription_tier')
       .eq('id', userId)
-      .single()
+      .single() as { data: { subscription_tier: string } | null }
 
-    const subscriptionTier = profile?.subscription_tier || 'free'
+    let subscriptionTier: 'free' | 'pro' | 'family' = 'free'
+    if (profile && profile.subscription_tier) {
+      const tier = profile.subscription_tier
+      if (tier === 'free' || tier === 'pro' || tier === 'family') {
+        subscriptionTier = tier
+      }
+    }
 
     // Check rate limit
     const rateLimit = await checkRateLimit(userId, subscriptionTier)
@@ -71,7 +91,7 @@ Generate a practical 3-part plan with specific, actionable strategies:
 
 Be specific, evidence-based, developmental, and account for the child's neurotype. Focus on what the parent can CONTROL.`
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4',
       messages: [
         {

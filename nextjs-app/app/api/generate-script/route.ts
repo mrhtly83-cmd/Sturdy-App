@@ -8,14 +8,28 @@ import {
 } from './smart-prompts'
 import { checkRateLimit } from '@/lib/rate-limit'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy initialization to avoid build-time errors
+let supabase: ReturnType<typeof createClient> | null = null
+let openai: OpenAI | null = null
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getSupabase() {
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabase
+}
+
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,13 +59,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's subscription tier from database
-    const { data: profile } = await supabase
+    const { data: profile } = await getSupabase()
       .from('profiles')
       .select('subscription_tier')
       .eq('id', userId)
-      .single()
+      .single() as { data: { subscription_tier: string } | null }
 
-    const subscriptionTier = profile?.subscription_tier || 'free'
+    let subscriptionTier: 'free' | 'pro' | 'family' = 'free'
+    if (profile && profile.subscription_tier) {
+      const tier = profile.subscription_tier
+      if (tier === 'free' || tier === 'pro' || tier === 'family') {
+        subscriptionTier = tier
+      }
+    }
 
     // Check rate limit
     const rateLimit = await checkRateLimit(userId, subscriptionTier)
@@ -102,7 +122,7 @@ export async function POST(request: NextRequest) {
     console.log('📝 Using evidence-based smart prompt system (Good Inside, How to Talk, Whole-Brain Child)')
 
     // CALL OPENAI WITH EVIDENCE-BASED PROMPTS
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -126,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // SAVE TO DATABASE
     if (mode === 'what-if') {
-      const { error: saveError } = await supabase
+      const { error: saveError } = await getSupabase()
         .from('what_if_scripts')
         .insert([
           {
@@ -138,7 +158,7 @@ export async function POST(request: NextRequest) {
             tone: tone,
             script: script,
           },
-        ])
+        ] as any)
 
       if (saveError) {
         console.error('Save to what_if_scripts error:', saveError)
