@@ -39,64 +39,82 @@ export default function HomePage() {
           <source src="/videos/hero.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
+        {/* Enhanced gradient overlay for premium feel */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"></div>
       </div>
 
       {/* Content Layer - Centered Mobile-First Design */}
       <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 py-8">
         
-        {/* Logo Section */}
-        <div className="mb-12 flex items-center gap-3 animate-fadeIn">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg">
-            ✓
+        {/* Premium logo with trust badge */}
+        <div className="mb-12 flex flex-col items-center gap-4 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 bg-gradient-to-br from-coral-500 to-teal-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl">
+              ✓
+            </div>
+            <span className="text-white font-black text-4xl tracking-tight">STURDY</span>
           </div>
-          <span className="text-white font-black text-3xl tracking-wide">STURDY</span>
+          <div className="px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
+            <span className="text-white text-sm font-semibold">Trusted by 10,000+ parents</span>
+          </div>
         </div>
 
-        {/* Main Heading */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white text-center mb-6 drop-shadow-lg max-w-2xl leading-tight">
-          Calm words, on demand.
+        {/* Main headline - larger, bolder */}
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white text-center mb-6 leading-tight tracking-tight drop-shadow-2xl max-w-4xl">
+          Calm words,<br />on demand.
         </h1>
 
-        {/* Subheading */}
-        <p className="text-base md:text-lg text-gray-100 text-center mb-16 drop-shadow-md max-w-2xl">
-          Science-backed scripts that help you stay connected and confident when parenting gets tough.
+        {/* Subheading with better contrast */}
+        <p className="text-lg md:text-xl text-gray-100 text-center mb-4 drop-shadow-lg max-w-2xl font-medium">
+          Science-backed parenting scripts that help you stay connected and confident when parenting gets tough.
         </p>
 
-        {/* Feature Cards - Mobile Optimized */}
+        {/* Trust line */}
+        <p className="text-sm md:text-base text-teal-300 text-center mb-12 font-semibold">
+          AI-powered guidance • Evidence-based • Personalized for your family
+        </p>
+
+        {/* Premium Feature Cards - Glassmorphism */}
         <div className="w-full max-w-md space-y-4 mb-12">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-5 hover:bg-white/20 transition duration-300 transform hover:scale-105 cursor-pointer group shadow-lg"
+              className="backdrop-blur-xl bg-white/10 border border-white/30 rounded-3xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl cursor-pointer group"
             >
               <div className="flex items-start gap-4">
-                <div className="text-4xl flex-shrink-0">{feature.icon}</div>
+                <div className="text-5xl flex-shrink-0">{feature.icon}</div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-bold text-base md:text-lg group-hover:text-teal-300 transition">
+                  <h3 className="text-white font-bold text-lg md:text-xl group-hover:text-teal-300 transition">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-200 text-sm mt-1">{feature.description}</p>
+                  <p className="text-gray-200 text-base mt-2">{feature.description}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Support Text */}
-        <p className="text-gray-300 text-center mb-10 text-xs md:text-sm font-medium">
-          Support, exactly when you need it.
-        </p>
+        {/* Prominent CTA Buttons */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+          <button
+            onClick={() => router.push(user ? '/dashboard' : '/auth/signup')}
+            className="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-coral-500/50 transition-all duration-300 transform hover:scale-105"
+          >
+            Get Started Free
+          </button>
 
-        {/* Continue Button */}
-        <button
-          onClick={() => router.push(user ? '/dashboard' : '/auth/signup')}
-          className="px-10 py-3 md:px-12 md:py-4 bg-gradient-to-r from-teal-500 via-teal-600 to-teal-700 hover:from-teal-600 hover:via-teal-700 hover:to-teal-800 text-white font-bold text-base md:text-lg rounded-full shadow-2xl hover:shadow-3xl transition duration-300 transform hover:scale-105 active:scale-95 flex items-center gap-2 md:gap-3"
-        >
-          Continue
-          <span className="text-xl md:text-2xl">›</span>
-        </button>
+          <button
+            onClick={() => router.push('/pricing')}
+            className="w-full md:w-auto px-10 py-4 bg-white/10 backdrop-blur-md border-2 border-white/30 hover:bg-white/20 text-white font-bold text-lg rounded-full transition-all duration-300 transform hover:scale-105"
+          >
+            View Pricing
+          </button>
+        </div>
+
+        {/* Trust text below CTAs */}
+        <p className="text-sm text-gray-300 text-center">
+          ✓ Free 7-day trial • No credit card required • Cancel anytime
+        </p>
 
       </div>
     </div>
