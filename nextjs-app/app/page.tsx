@@ -47,7 +47,7 @@ export default function HomePage() {
       <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 py-8">
         
         {/* Premium logo with trust badge */}
-        <div className="mb-12 flex flex-col items-center gap-4 animate-fadeIn">
+        <div className="mb-12 flex flex-col items-center gap-4 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 bg-gradient-to-br from-coral-500 to-teal-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl">
               ✓
@@ -98,7 +98,7 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
           <button
             onClick={() => router.push(user ? '/dashboard' : '/auth/signup')}
-            className="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-coral-500/50 transition-all duration-300 transform hover:scale-105"
+            className="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             Get Started Free
           </button>
