@@ -1,6 +1,5 @@
 {
-  "buildCommand": "cd sturdy-app && npm install && npm run build",
-  "outputDirectory": "sturdy-app/dist",
-  "framework": null,
-  "installCommand": "cd sturdy-app && npm install"
+  "buildSettings": {
+    "rootDirectory": "nextjs-app"
+  }
 }
