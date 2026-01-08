@@ -1,0 +1,67 @@
+{
+  "name": "Sturdy Development",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/nix:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "usernamehw.errorlens",
+        "ms-vscode.makefile-tools",
+        "orta.vscode-jest",
+        "eamodio.gitlens",
+        "unifiedjs.vscode-mdx",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+
+  "forwardPorts": [3000, 54321],
+  "portAttributes": {
+    "3000": {
+      "label": "Application",
+      "onAutoForward": "notify"
+    },
+    "54321": {
+      "label": "Supabase Studio",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "postCreateCommand": "npm install",
+
+  "postStartCommand": "npm run dev",
+
+  "remoteUser": "node",
+
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,readonly"
+  ],
+
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/node/.npm-global/bin"
+  }
+}
