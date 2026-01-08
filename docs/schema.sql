@@ -1,170 +1,197 @@
--- =============================================================================
--- STURDY APP - DATABASE SCHEMA
--- =============================================================================
--- Complete PostgreSQL schema for Supabase
--- Includes: Tables, RLS policies, indexes, constraints
+-- ============================================
+-- STURDY APP - DATABASE SCHEMA EXPORT
+-- Generated from production Supabase database
+-- ============================================
+-- Complete PostgreSQL schema with all tables, constraints, and RLS policies
 -- Last updated: January 2026
--- =============================================================================
+-- ============================================
 
--- Enable UUID extension (required for uuid_generate_v4())
+-- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- =============================================================================
--- TABLES
--- =============================================================================
-
--- -----------------------------------------------------------------------------
--- Profiles Table (extends auth.users)
--- -----------------------------------------------------------------------------
--- Stores user profile information and subscription tier
--- Links to Supabase Auth via foreign key to auth.users(id)
--- -----------------------------------------------------------------------------
+-- ============================================
+-- PROFILES TABLE
+-- ============================================
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT UNIQUE NOT NULL,
-  full_name TEXT,
-  avatar_url TEXT,
-  subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'family')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  email TEXT,
+  subscription_tier TEXT DEFAULT 'free',
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
--- -----------------------------------------------------------------------------
--- Children Table
--- -----------------------------------------------------------------------------
--- Stores information about each child profile
--- Each child belongs to a parent (profile)
--- Tracks neurotype for personalized script generation
--- -----------------------------------------------------------------------------
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own profile" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Allow users to insert their own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow users to update their own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- ============================================
+-- CHILDREN TABLE
+-- ============================================
 CREATE TABLE children (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
+  name TEXT,
   birth_date DATE,
   neurotype TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
--- -----------------------------------------------------------------------------
--- Scripts Table (SOS scripts)
--- -----------------------------------------------------------------------------
--- Stores generated SOS scripts (immediate crisis mode)
--- Each script is linked to both parent and child
--- Includes optional helpful_rating for feedback loop
--- -----------------------------------------------------------------------------
+ALTER TABLE children ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own children" ON children
+  FOR SELECT USING (auth.uid() = parent_id);
+
+CREATE POLICY "Users can insert their own children" ON children
+  FOR INSERT WITH CHECK (auth.uid() = parent_id);
+
+CREATE POLICY "Users can update their own children" ON children
+  FOR UPDATE USING (auth.uid() = parent_id);
+
+-- ============================================
+-- SCRIPTS TABLE
+-- ============================================
 CREATE TABLE scripts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
-  situation TEXT NOT NULL,
-  script_text TEXT NOT NULL,
+  situation TEXT,
+  script_text TEXT,
+  validation TEXT,
+  reframe TEXT,
+  script_language TEXT,
+  psych_insight TEXT,
   tone TEXT,
-  helpful_rating BOOLEAN,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  user_rating INTEGER,
+  user_helpful BOOLEAN,
+  generated_script TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
--- -----------------------------------------------------------------------------
--- What If Scripts Table (proactive planning)
--- -----------------------------------------------------------------------------
--- Stores generated What If scripts (proactive planning mode)
--- Used for advance preparation for anticipated struggles
--- Includes frequency and context for better personalization
--- -----------------------------------------------------------------------------
-CREATE TABLE what_if_scripts (
+ALTER TABLE scripts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own scripts" ON scripts
+  FOR SELECT USING (auth.uid() = parent_id);
+
+CREATE POLICY "Users can insert own scripts" ON scripts
+  FOR INSERT WITH CHECK (auth.uid() = parent_id);
+
+CREATE POLICY "Users can update their own scripts" ON scripts
+  FOR UPDATE USING (auth.uid() = parent_id);
+
+-- ============================================
+-- PLANS TABLE (What If scripts)
+-- ============================================
+-- IMPORTANT: This table uses user_id, NOT parent_id!
+CREATE TABLE plans (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  struggle TEXT,
+  frequency TEXT,
+  triggers TEXT,
+  prevention TEXT,
+  intervention TEXT,
+  escalation TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own plans" ON plans
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own plans" ON plans
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own plans" ON plans
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own plans" ON plans
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================
+-- SCRIPT_FEEDBACK TABLE
+-- ============================================
+CREATE TABLE script_feedback (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   parent_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
-  struggle TEXT NOT NULL,
-  context TEXT,
-  frequency TEXT,
-  tone TEXT,
-  script TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  script_id UUID NOT NULL REFERENCES scripts(id) ON DELETE CASCADE,
+  helpful BOOLEAN,
+  child_response TEXT,
+  rating INTEGER,
+  notes TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
--- =============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
--- =============================================================================
+ALTER TABLE script_feedback ENABLE ROW LEVEL SECURITY;
 
--- Enable RLS on all tables
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE children ENABLE ROW LEVEL SECURITY;
-ALTER TABLE scripts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE what_if_scripts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view their feedback" ON script_feedback
+  FOR SELECT USING (auth.uid() = parent_id);
 
--- -----------------------------------------------------------------------------
--- Profiles RLS Policies
--- -----------------------------------------------------------------------------
--- Users can only view and update their own profile
--- No insert policy needed (handled by auth trigger)
--- No delete policy needed (Supabase auth handles user deletion)
--- -----------------------------------------------------------------------------
-CREATE POLICY "Users can view own profile" 
-  ON profiles FOR SELECT 
-  USING (auth.uid() = id);
+-- ============================================
+-- FAMILY_INVITES TABLE
+-- ============================================
+CREATE TABLE family_invites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  inviter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  invitee_email TEXT,
+  family_join_code UUID,
+  accepted BOOLEAN,
+  accepted_at TIMESTAMP WITHOUT TIME ZONE,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
 
-CREATE POLICY "Users can update own profile" 
-  ON profiles FOR UPDATE 
-  USING (auth.uid() = id);
+ALTER TABLE family_invites ENABLE ROW LEVEL SECURITY;
 
--- -----------------------------------------------------------------------------
--- Children RLS Policies
--- -----------------------------------------------------------------------------
--- Parents can perform all CRUD operations on their own children
--- Cannot view or modify children belonging to other parents
--- -----------------------------------------------------------------------------
-CREATE POLICY "Parents can view own children" 
-  ON children FOR SELECT 
-  USING (auth.uid() = parent_id);
+CREATE POLICY "Users can view their invites" ON family_invites
+  FOR SELECT USING (auth.uid() = inviter_id);
 
-CREATE POLICY "Parents can insert own children" 
-  ON children FOR INSERT 
-  WITH CHECK (auth.uid() = parent_id);
+-- ============================================
+-- STRUGGLE_CATEGORIES TABLE
+-- ============================================
+CREATE TABLE struggle_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  category TEXT,
+  description TEXT,
+  keywords TEXT[],
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
 
-CREATE POLICY "Parents can update own children" 
-  ON children FOR UPDATE 
-  USING (auth.uid() = parent_id);
+ALTER TABLE struggle_categories ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Parents can delete own children" 
-  ON children FOR DELETE 
-  USING (auth.uid() = parent_id);
+CREATE POLICY "Anyone can read categories" ON struggle_categories
+  FOR SELECT USING (true);
 
--- -----------------------------------------------------------------------------
--- Scripts RLS Policies
--- -----------------------------------------------------------------------------
--- Parents can view, insert, and delete their own scripts
--- No update policy (scripts are immutable once created)
--- -----------------------------------------------------------------------------
-CREATE POLICY "Parents can view own scripts" 
-  ON scripts FOR SELECT 
-  USING (auth.uid() = parent_id);
+-- ============================================
+-- STRUGGLE_KEYWORDS TABLE
+-- ============================================
+CREATE TABLE struggle_keywords (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  struggle_id UUID NOT NULL REFERENCES struggle_categories(id) ON DELETE CASCADE,
+  keyword TEXT,
+  keyword_type TEXT,
+  created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
 
-CREATE POLICY "Parents can insert own scripts" 
-  ON scripts FOR INSERT 
-  WITH CHECK (auth.uid() = parent_id);
+ALTER TABLE struggle_keywords ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Parents can delete own scripts" 
-  ON scripts FOR DELETE 
-  USING (auth.uid() = parent_id);
+-- Security fix: Add RLS policy (was previously unrestricted)
+CREATE POLICY "Anyone can read keywords" ON struggle_keywords
+  FOR SELECT USING (true);
 
--- -----------------------------------------------------------------------------
--- What If Scripts RLS Policies
--- -----------------------------------------------------------------------------
--- Parents can view and insert their own what-if scripts
--- No update or delete policies (scripts are immutable)
--- -----------------------------------------------------------------------------
-CREATE POLICY "Parents can view own what_if_scripts" 
-  ON what_if_scripts FOR SELECT 
-  USING (auth.uid() = parent_id);
-
-CREATE POLICY "Parents can insert own what_if_scripts" 
-  ON what_if_scripts FOR INSERT 
-  WITH CHECK (auth.uid() = parent_id);
-
--- =============================================================================
+-- ============================================
 -- INDEXES FOR PERFORMANCE
--- =============================================================================
+-- ============================================
 
 -- Children table indexes
 CREATE INDEX idx_children_parent_id ON children(parent_id);
@@ -172,20 +199,26 @@ CREATE INDEX idx_children_parent_id ON children(parent_id);
 -- Scripts table indexes
 CREATE INDEX idx_scripts_parent_id ON scripts(parent_id);
 CREATE INDEX idx_scripts_child_id ON scripts(child_id);
-CREATE INDEX idx_scripts_created_at ON scripts(created_at DESC);
 
--- What If Scripts table indexes
-CREATE INDEX idx_what_if_scripts_parent_id ON what_if_scripts(parent_id);
-CREATE INDEX idx_what_if_scripts_child_id ON what_if_scripts(child_id);
-CREATE INDEX idx_what_if_scripts_created_at ON what_if_scripts(created_at DESC);
+-- Plans table indexes
+CREATE INDEX idx_plans_user_id ON plans(user_id);
+CREATE INDEX idx_plans_child_id ON plans(child_id);
 
--- =============================================================================
+-- Script_feedback table indexes
+CREATE INDEX idx_script_feedback_parent_id ON script_feedback(parent_id);
+CREATE INDEX idx_script_feedback_script_id ON script_feedback(script_id);
+
+-- Family_invites table indexes
+CREATE INDEX idx_family_invites_inviter_id ON family_invites(inviter_id);
+
+-- Struggle_keywords table indexes
+CREATE INDEX idx_struggle_keywords_struggle_id ON struggle_keywords(struggle_id);
+
+-- ============================================
 -- TRIGGERS
--- =============================================================================
+-- ============================================
 
--- -----------------------------------------------------------------------------
 -- Auto-update updated_at timestamp
--- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -194,56 +227,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply trigger to profiles
+-- Apply trigger to tables with updated_at column
 CREATE TRIGGER update_profiles_updated_at 
   BEFORE UPDATE ON profiles
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Apply trigger to children
 CREATE TRIGGER update_children_updated_at 
   BEFORE UPDATE ON children
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- =============================================================================
--- MIGRATION INSTRUCTIONS
--- =============================================================================
+CREATE TRIGGER update_scripts_updated_at 
+  BEFORE UPDATE ON scripts
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_plans_updated_at 
+  BEFORE UPDATE ON plans
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- SETUP INSTRUCTIONS
+-- ============================================
 -- 
--- To set up this schema in a new Supabase project:
+-- To restore this schema in a new Supabase project:
 -- 
 -- 1. Create a new Supabase project at https://supabase.com/dashboard
--- 
--- 2. Go to SQL Editor in your project dashboard
--- 
+-- 2. Navigate to SQL Editor in your project dashboard
 -- 3. Copy and paste this entire file into the SQL Editor
--- 
 -- 4. Click "Run" to execute all commands
+-- 5. Verify tables were created in Table Editor
+-- 6. Verify RLS is enabled on all tables
 -- 
--- 5. Verify tables were created:
---    - Go to Table Editor
---    - You should see: profiles, children, scripts, what_if_scripts
--- 
--- 6. Verify RLS is enabled:
---    - Click on each table
---    - Check "Row Level Security" is enabled
---    - Check policies are listed
--- 
--- 7. Test the setup:
---    - Create a test user via Authentication
---    - Try inserting a profile record
---    - Verify RLS prevents unauthorized access
--- 
--- =============================================================================
--- ROLLBACK (if needed)
--- =============================================================================
--- 
--- To remove this schema (WARNING: destroys all data):
--- 
--- DROP TABLE IF EXISTS what_if_scripts CASCADE;
--- DROP TABLE IF EXISTS scripts CASCADE;
--- DROP TABLE IF EXISTS children CASCADE;
--- DROP TABLE IF EXISTS profiles CASCADE;
--- DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
--- 
--- =============================================================================
+-- ============================================
