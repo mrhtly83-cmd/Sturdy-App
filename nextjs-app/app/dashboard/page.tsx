@@ -536,11 +536,13 @@ export default function DashboardPage() {
                   setStruggle('')
                   setTone('gentle')
                   setScriptError('')
-                  localStorage.setItem('whatIfData', JSON.stringify({
-                    childId: selectedChild,
-                    struggle: struggle,
-                    tone: tone,
-                  }))
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('whatIfData', JSON.stringify({
+                      childId: selectedChild,
+                      struggle: struggle,
+                      tone: tone,
+                    }))
+                  }
                   router.push('/dashboard/what-if')
                 }}
                 className="w-full px-6 py-5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-xl"
