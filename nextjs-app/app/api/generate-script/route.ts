@@ -6,15 +6,32 @@ import {
   generateSOSPrompt,
   generateWhatIfPrompt,
 } from './smart-prompts'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { getUserSubscriptionTier } from '@/lib/subscription'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy initialization to avoid build-time errors
+let supabase: SupabaseClient | null = null
+let openai: OpenAI | null = null
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getSupabase() {
+  if (!supabase) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return supabase
+}
+
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +60,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`✅ All fields present. Generating ${mode} script...`)
+    // Get user's subscription tier from database
+    const subscriptionTier = await getUserSubscriptionTier(userId)
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(userId, subscriptionTier)
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded',
+          message: `You've used all ${rateLimit.limit} scripts for this hour. ${
+            subscriptionTier === 'free'
+              ? 'Upgrade to Pro for more scripts.'
+              : 'Please wait until rate limit resets.'
+          }`,
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          reset: rateLimit.reset,
+          tier: subscriptionTier,
+        },
+        { status: 429 }
+      )
+    }
+
+    console.log(`✅ Rate limit check passed (${rateLimit.remaining}/${rateLimit.limit} remaining). Generating ${mode} script...`)
 
     // SELECT PROMPT BASED ON MODE
     const userPrompt =
@@ -71,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.log('📝 Using evidence-based smart prompt system (Good Inside, How to Talk, Whole-Brain Child)')
 
     // CALL OPENAI WITH EVIDENCE-BASED PROMPTS
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -95,19 +136,20 @@ export async function POST(request: NextRequest) {
 
     // SAVE TO DATABASE
     if (mode === 'what-if') {
-      const { error: saveError } = await supabase
+      const scriptData = {
+        parent_id: userId,
+        child_id: childId,
+        struggle: struggle,
+        context: context || '',
+        frequency: frequency || '',
+        tone: tone,
+        script: script,
+      }
+
+      // Type assertion needed due to Supabase generated types
+      const { error: saveError } = await getSupabase()
         .from('what_if_scripts')
-        .insert([
-          {
-            parent_id: userId,
-            child_id: childId,
-            struggle: struggle,
-            context: context || '',
-            frequency: frequency || '',
-            tone: tone,
-            script: script,
-          },
-        ])
+        .insert([scriptData] as any[])
 
       if (saveError) {
         console.error('Save to what_if_scripts error:', saveError)

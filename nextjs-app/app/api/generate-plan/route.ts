@@ -1,13 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { getUserSubscriptionTier } from '@/lib/subscription'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization to avoid build-time errors
+let openai: OpenAI | null = null
+
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { childName, childAge, childNeurotype, struggle, frequency, triggers } = await req.json()
+    const { childName, childAge, childNeurotype, struggle, frequency, triggers, userId } = await req.json()
+
+    // Validate required fields
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Missing userId' },
+        { status: 400 }
+      )
+    }
+
+    // Get user's subscription tier from database
+    const subscriptionTier = await getUserSubscriptionTier(userId)
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(userId, subscriptionTier)
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded',
+          message: `You've used all ${rateLimit.limit} plans for this hour. ${
+            subscriptionTier === 'free'
+              ? 'Upgrade to Pro for more plans.'
+              : 'Please wait until rate limit resets.'
+          }`,
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          reset: rateLimit.reset,
+          tier: subscriptionTier,
+        },
+        { status: 429 }
+      )
+    }
 
     const prompt = `You are an expert parenting coach. Create a 3-part proactive plan for this situation:
 
@@ -26,7 +68,7 @@ Generate a practical 3-part plan with specific, actionable strategies:
 
 Be specific, evidence-based, developmental, and account for the child's neurotype. Focus on what the parent can CONTROL.`
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
