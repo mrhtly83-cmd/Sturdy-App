@@ -18,22 +18,23 @@
 ## 📱 Tech Stack
 
 ### Core Framework
-- **Framework**: Next.js 14+ (App Router with React 18)
+- **Framework**: React Native with Expo SDK ~52.0.0
 - **Language**: TypeScript (strict mode, no `any`)
-- **Runtime**: Node.js 18+
+- **Runtime**: React Native 0.76.9
 
 ### Frontend
-- **Styling**: Tailwind CSS with calming design system (for parenting app)
-- **Component Library**: Headless UI / Radix UI
-- **State Management**: React Context API + Server Components (prefer server-first)
-- **Forms**: React Hook Form + Zod validation
-- **Animations**: Framer Motion (subtle, calming)
+- **Styling**: React Native StyleSheet with Glassmorphism design system
+- **Navigation**: Expo Router (file-based routing)
+- **Component Library**: React Native core components + expo-blur, expo-linear-gradient
+- **State Management**: React Context API
+- **Forms**: Controlled components with validation
+- **Animations**: React Native Animated API (subtle, calming)
 
 ### Backend & Database
 - **Database**: Supabase PostgreSQL
 - **Auth**: Supabase Auth (Email/Password + OAuth: Google, Apple)
 - **Real-time**: Supabase Realtime subscriptions (optional for Phase 2)
-- **API**: Server Actions + API Routes (/api for OpenAI + webhooks)
+- **API**: Supabase client-side queries + Edge Functions (for OpenAI)
 - **File Storage**: Supabase Storage (optional for user profiles)
 
 ### AI & Parenting
@@ -44,10 +45,10 @@
 ### Developer Tools
 - **Package Manager**: npm
 - **Version Control**: Git + GitHub
-- **Deployment**: Vercel
+- **Deployment**: EAS Build (iOS & Android)
 - **Environment**: GitHub Codespaces / VS Code
-- **Testing**: Vitest + React Testing Library
-- **Code Quality**: ESLint, Prettier, TypeScript strict mode
+- **Testing**: Jest + React Native Testing Library
+- **Code Quality**: ESLint, TypeScript strict mode
 
 ---
 
@@ -97,34 +98,23 @@ create table scripts (
 ### Directory Structure
 
 ```
-sturdy/
+Sturdy-App/
 ├── .github/
 │   └── copilot-instructions.md       ← This file
 ├── .vscode/
 │   └── settings.json
-├── .devcontainer/
-│   └── devcontainer.json
-├── src/
+├── sturdy-app/                       ← Mobile app (React Native + Expo)
 │   ├── app/
 │   │   ├── (auth)/
-│   │   │   ├── login/
-│   │   │   ├── signup/
-│   │   │   └── reset-password/
-│   │   ├── (authenticated)/
-│   │   │   ├── dashboard/
-│   │   │   ├── create/                ← Script generator
-│   │   │   ├── journal/               ← Script history
-│   │   │   ├── settings/
-│   │   │   └── safety/
-│   │   ├── (marketing)/
-│   │   │   ├── page.tsx               ← Landing page
-│   │   │   └── pricing/               ← Phase 2
-│   │   ├── api/
-│   │   │   ├── scripts/generate/route.ts
-│   │   │   └── webhooks/stripe/route.ts (Phase 2)
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── error.tsx
+│   │   │   ├── login.tsx
+│   │   │   ├── signup.tsx
+│   │   │   └── _layout.tsx
+│   │   ├── (tabs)/
+│   │   │   ├── index.tsx             ← Landing/Home screen
+│   │   │   ├── explore.tsx
+│   │   │   └── _layout.tsx
+│   │   ├── _layout.tsx
+│   │   └── modal.tsx
 │   ├── components/
 │   │   ├── auth/
 │   │   │   ├── LoginForm.tsx
@@ -132,31 +122,26 @@ sturdy/
 │   │   ├── ui/
 │   │   │   ├── Button.tsx
 │   │   │   ├── Input.tsx
-│   │   │   ├── Modal.tsx
 │   │   │   └── Card.tsx
 │   │   ├── ScriptGenerator.tsx
 │   │   ├── ScriptDisplay.tsx
 │   │   └── ChildCard.tsx
 │   ├── lib/
-│   │   ├── api/
-│   │   │   ├── supabase-client.ts
-│   │   │   ├── supabase-server.ts
-│   │   │   └── auth-helpers.ts
-│   │   ├── hooks/
-│   │   │   └── useAuth.ts
-│   │   ├── prompts.ts                 ← AI methodology
-│   │   ├── types.ts
-│   │   └── utils.ts
-│   ├── middleware.ts
-│   └── styles/
-│       ├── globals.css
-│       └── variables.css
-├── .env.local                         ← Secrets (don't commit)
-├── .env.example
-├── package.json
-├── tsconfig.json
-├── next.config.js
-├── tailwind.config.js
+│   │   ├── supabase.ts               ← Supabase client
+│   │   ├── auth-context.tsx          ← Auth provider
+│   │   ├── prompts.ts                ← AI methodology
+│   │   └── types.ts
+│   ├── assets/
+│   │   └── images/
+│   ├── constants/
+│   │   └── Colors.ts
+│   ├── .env                          ← Environment variables
+│   ├── app.json                      ← Expo configuration
+│   ├── eas.json                      ← EAS Build configuration
+│   ├── package.json
+│   └── tsconfig.json
+├── docs/                             ← Documentation
+├── package.json                      ← Root package
 └── README.md
 ```
 
@@ -164,24 +149,25 @@ sturdy/
 
 ## 🎨 Design Principles
 
-### Colors (Calming, Trustworthy)
-- Primary: Soft teal/sage green (compassion, calmness)
-- Secondary: Warm neutral (approachability)
-- Accents: Supportive blues
-- Text: Dark slate for readability
-- Background: Soft cream/white
+### Colors (Calming, Trustworthy) - Glassmorphism Design
+- Primary: Coral/Orange gradients (#F87171 → #F97316) for action buttons
+- Secondary: Teal gradients (#14B8A6 → #0EA5E9) for calm, trust
+- Background: Black (#000000) with transparent overlays (70% opacity)
+- Glass Elements: White 10-20% opacity with backdrop blur
+- Text: White (#FFFFFF) with shadows for readability
 
 ### Typography
-- Headlines: Clear, warm, encouraging
-- Body: Readable, empathetic tone
-- Code: Monospace for API outputs
+- System fonts for optimal performance on iOS/Android
+- Headlines: 3xl-6xl font-black (bold, impactful)
+- Body: Base-lg font-medium (clear, approachable)
+- Button Text: lg font-bold (confident, actionable)
 
-### Component Patterns
-- Buttons: Clear CTAs (Generate Script, Save, Next)
-- Forms: Gentle validation, helpful error messages
-- Modals: Safe, non-intrusive design
-- Loading: Calming spinner + encouraging message
-- Success: Warm affirmation message
+### Component Patterns (React Native)
+- Buttons: TouchableOpacity with gradient backgrounds
+- Forms: TextInput with validation feedback
+- Modals: BlurView with glassmorphism effect
+- Loading: ActivityIndicator with encouraging message
+- Success: Animated feedback with haptics
 
 ---
 
@@ -475,11 +461,12 @@ Important: Be warm, non-judgmental, and evidence-based. Avoid medical/clinical a
 
 ## 🔗 Key Resources
 
-- **Next.js 14 Docs**: https://nextjs.org/docs
+- **Expo Docs**: https://docs.expo.dev/
+- **React Native Docs**: https://reactnative.dev/
 - **Supabase Docs**: https://supabase.com/docs
 - **OpenAI API**: https://platform.openai.com/docs
-- **Tailwind CSS**: https://tailwindcss.com/docs
-- **React Hooks**: https://react.dev/reference/react
+- **EAS Build**: https://docs.expo.dev/build/introduction/
+- **React Navigation**: https://reactnavigation.org/docs/getting-started/
 - **Attachment Theory**: https://en.wikipedia.org/wiki/Attachment_theory
 - **IFS Model**: https://www.internalfamilysystems.net/
 - **Good Inside**: https://www.drneufeld.com/

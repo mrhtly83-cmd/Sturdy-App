@@ -35,21 +35,13 @@ This guide walks you through setting up all required services for Sturdy App dev
    ```
    https://abcdefghijklmnop.supabase.co
    ```
-   Copy to: `NEXT_PUBLIC_SUPABASE_URL`
+   Copy to: `EXPO_PUBLIC_SUPABASE_URL`
 
    **anon public key:**
    ```
    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
-   Copy to: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-   **service_role secret key:**
-   ```
-   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
-   Copy to: `SUPABASE_SERVICE_ROLE_KEY`
-   
-   ⚠️ **Important:** service_role key is SECRET - never commit to git or expose to client!
+   Copy to: `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 
 4. **Run Database Migration**
    - Go to: **SQL Editor** (left sidebar)
@@ -190,65 +182,70 @@ This guide walks you through setting up all required services for Sturdy App dev
 
 ```bash
 git clone https://github.com/your-org/sturdy-app.git
-cd sturdy-app/nextjs-app
+cd sturdy-app
 ```
 
 ### Step 2: Install Dependencies
 
 ```bash
+# Install root dependencies
+npm install
+
+# Install mobile app dependencies
+cd sturdy-app
 npm install
 ```
 
 This installs:
-- Next.js 14
-- React 18
+- React Native 0.76.9
+- Expo SDK ~52.0.0
 - Supabase client
-- OpenAI client
-- Upstash Redis + Ratelimit
+- React Navigation
 - TypeScript
-- Tailwind CSS
+- Expo Router
 
 ### Step 3: Create Environment File
 
 ```bash
-cp ../.env.example .env.local
+cd sturdy-app
+cp .env.example .env
 ```
 
 ### Step 4: Fill in Environment Variables
 
-Open `.env.local` and add your credentials from the services above:
+Open `.env` and add your credentials from the services above:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbG...
+# Supabase (use EXPO_PUBLIC_ prefix for client-side access)
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...
 
-# OpenAI
-OPENAI_API_KEY=sk-proj-...
-
-# Upstash Redis
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AaBbCc...
-
-# App Config
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# OpenAI (for server-side API calls)
+EXPO_PUBLIC_OPENAI_API_KEY=sk-proj-...
 ```
+
+**Note:** Expo requires the `EXPO_PUBLIC_` prefix for environment variables that need to be accessible at runtime.
 
 ### Step 5: Run Development Server
 
 ```bash
-npm run dev
+npm start
+# Or: npx expo start
 ```
 
-Visit: http://localhost:3000
+Then choose your platform:
+- Press **'i'** for iOS Simulator (Mac only)
+- Press **'a'** for Android Emulator
+- Press **'w'** for Web preview
+- Scan QR code with Expo Go app on your device
 
 ### Step 6: Test Authentication
 
-1. Click "Sign Up"
-2. Create account with email
-3. Check Supabase dashboard → Authentication → Users
-4. You should see your new user
+1. Launch app on device/simulator
+2. Tap "Sign Up"
+3. Create account with email
+4. Check Supabase dashboard → Authentication → Users
+5. You should see your new user
 
 ### Step 7: Test Script Generation
 
@@ -261,52 +258,148 @@ Visit: http://localhost:3000
 
 ---
 
-## Production Deployment (Vercel)
+## Mobile App Deployment
 
-### Prerequisites
-- GitHub repository with your code
-- Vercel account (free tier available)
+### iOS Deployment (App Store)
 
-### Step 1: Import Project to Vercel
+#### Prerequisites
+- Apple Developer account ($99/year)
+- EAS Build account (free tier available)
+- Mac with Xcode (for local builds) OR use EAS cloud builds
 
-1. Go to https://vercel.com/new
-2. Click "Import Git Repository"
-3. Select your Sturdy App repo
-4. Click "Import"
+#### Step 1: Configure EAS Build
 
-### Step 2: Configure Project
+```bash
+cd sturdy-app
+npx eas build:configure
+```
 
-- **Framework:** Next.js (auto-detected)
-- **Root Directory:** `nextjs-app` (important!)
-- **Build Command:** `npm run build` (default)
-- **Output Directory:** `.next` (default)
+This creates `eas.json` configuration file.
 
-### Step 3: Add Environment Variables
+#### Step 2: Update app.json
 
-In Vercel project settings → Environment Variables, add ALL variables from `.env.local`:
+Ensure these values are set:
 
-| Variable | Value | Environment |
-|----------|-------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://your-project.supabase.co` | Production, Preview, Development |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbG...` | Production, Preview, Development |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbG...` | Production, Preview, Development |
-| `OPENAI_API_KEY` | `sk-proj-...` | Production, Preview, Development |
-| `UPSTASH_REDIS_REST_URL` | `https://...upstash.io` | Production, Preview, Development |
-| `UPSTASH_REDIS_REST_TOKEN` | `AaBbCc...` | Production, Preview, Development |
-| `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` | Production |
+```json
+{
+  "expo": {
+    "name": "Sturdy",
+    "slug": "sturdy-app",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.sturdy",
+      "supportsTablet": true
+    }
+  }
+}
+```
 
-**Important:** Use different Supabase projects for development and production (recommended)
+#### Step 3: Build for iOS
 
-### Step 4: Deploy
+```bash
+# Production build
+npx eas build --platform ios --profile production
 
-1. Click "Deploy"
-2. Wait 2-3 minutes for build
-3. Click on deployment URL
-4. Test all features
+# Development build (for internal testing)
+npx eas build --platform ios --profile development
+```
 
-### Step 5: Post-Deployment Verification
+#### Step 4: Submit to App Store
 
-Run through the verification checklist below.
+```bash
+npx eas submit --platform ios
+```
+
+Follow prompts to:
+- Select build to submit
+- Provide Apple ID credentials
+- Choose app identifier
+
+See detailed guide: [iOS_SETUP.md](./iOS_SETUP.md)
+
+---
+
+### Android Deployment (Google Play)
+
+#### Prerequisites
+- Google Play Developer account ($25 one-time)
+- EAS Build account (free tier available)
+
+#### Step 1: Configure EAS Build
+
+```bash
+cd sturdy-app
+npx eas build:configure
+```
+
+#### Step 2: Update app.json
+
+Ensure these values are set:
+
+```json
+{
+  "expo": {
+    "name": "Sturdy",
+    "slug": "sturdy-app",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.yourcompany.sturdy",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE"
+      }
+    }
+  }
+}
+```
+
+#### Step 3: Build for Android
+
+```bash
+# Production build (AAB for Play Store)
+npx eas build --platform android --profile production
+
+# APK for testing
+npx eas build --platform android --profile preview
+```
+
+#### Step 4: Submit to Google Play
+
+```bash
+npx eas submit --platform android
+```
+
+Follow prompts to:
+- Select build to submit
+- Provide Google Play credentials
+- Choose release track (internal/alpha/beta/production)
+
+See detailed guide: [ANDROID_SETUP.md](./ANDROID_SETUP.md)
+
+---
+
+## Environment Variables Reference
+
+### Development (.env in sturdy-app/)
+
+```env
+# Required
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...
+
+# Optional (for server-side features)
+EXPO_PUBLIC_OPENAI_API_KEY=sk-proj-...
+```
+
+### Production (EAS Secrets)
+
+Store sensitive variables as EAS Secrets:
+
+```bash
+# Add secrets
+npx eas secret:create --scope project --name EXPO_PUBLIC_SUPABASE_URL --value "https://..."
+npx eas secret:create --scope project --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "eyJhbG..."
+npx eas secret:create --scope project --name EXPO_PUBLIC_OPENAI_API_KEY --value "sk-proj-..."
+```
 
 ---
 
@@ -318,7 +411,7 @@ After completing setup, verify each feature works:
 - [ ] Can sign up with email/password
 - [ ] Can log in with existing account
 - [ ] Can log out
-- [ ] Session persists on page refresh
+- [ ] Session persists on app restart
 - [ ] Can reset password (check email)
 
 ### Child Profiles
@@ -336,18 +429,6 @@ After completing setup, verify each feature works:
 - [ ] Script appears within 3-5 seconds
 - [ ] Can rate script as helpful
 
-### What If Scripts
-- [ ] Can navigate to What If mode
-- [ ] Can enter struggle
-- [ ] Can generate planning script
-- [ ] 3-part plan appears (Prevention, Intervention, Escalation)
-
-### Rate Limiting
-- [ ] Can generate 5 scripts as free user
-- [ ] 6th request returns 429 error
-- [ ] Error message suggests upgrade
-- [ ] Rate limit resets after 1 hour
-
 ### Database
 - [ ] Check Supabase → Table Editor
 - [ ] Verify `profiles` has your user
@@ -356,30 +437,22 @@ After completing setup, verify each feature works:
 - [ ] Verify RLS is enabled (can't see other users' data)
 
 ### Performance
-- [ ] Page loads in <2 seconds
+- [ ] App launches in <2 seconds
 - [ ] Script generation completes in <5 seconds
-- [ ] No console errors in browser
-- [ ] Mobile responsive (test on phone)
+- [ ] No errors in console
+- [ ] Works on both iOS and Android
 
 ---
 
 ## Troubleshooting
 
 ### "Supabase URL is not defined"
-- **Cause:** Missing `NEXT_PUBLIC_SUPABASE_URL` in .env.local
+- **Cause:** Missing `EXPO_PUBLIC_SUPABASE_URL` in .env
 - **Solution:** Copy from Supabase dashboard → Settings → API
 
 ### "OpenAI API key invalid"
 - **Cause:** Wrong API key or insufficient credits
 - **Solution:** Verify key in OpenAI dashboard, check billing page
-
-### "Cannot connect to Redis"
-- **Cause:** Wrong Upstash credentials
-- **Solution:** Verify URL and token match Upstash dashboard
-
-### "Rate limit not working"
-- **Cause:** Redis credentials not loaded
-- **Solution:** Restart dev server after adding Upstash env vars
 
 ### "Database query failed"
 - **Cause:** RLS policy blocks query OR table doesn't exist
@@ -389,37 +462,35 @@ After completing setup, verify each feature works:
 - **Cause:** Email confirmation required OR SMTP not configured
 - **Solution:** Disable email confirmation in Supabase → Authentication → Settings
 
-### Build fails on Vercel
+### "Build fails on EAS"
 - **Cause:** TypeScript errors OR missing environment variables
-- **Solution:** Check build logs, verify all env vars are set
+- **Solution:** Check build logs, verify all secrets are set
+
+### "Expo Go app not loading"
+- **Cause:** Device and computer on different networks
+- **Solution:** Ensure both are on same WiFi, or use tunnel mode: `npx expo start --tunnel`
 
 ---
 
 ## Security Best Practices
 
 ### 1. Environment Variables
-- ✅ Store in `.env.local` (gitignored)
-- ✅ Never commit `.env.local` to git
-- ✅ Use different values for dev/production
+- ✅ Store in `.env` (gitignored)
+- ✅ Never commit `.env` to git
+- ✅ Use EAS Secrets for production
 - ❌ Never hardcode secrets in code
 
 ### 2. API Keys
-- ✅ Keep service_role key SECRET
-- ✅ Only use service_role on server-side
-- ✅ Use anon key for client-side queries
-- ❌ Never expose service_role to browser
+- ✅ Use `EXPO_PUBLIC_` prefix only when needed
+- ✅ Store sensitive keys as EAS Secrets
+- ✅ Use anon key for client-side Supabase queries
+- ❌ Never expose server-side keys to mobile app
 
 ### 3. Database
 - ✅ Enable RLS on all tables
 - ✅ Test RLS policies work
 - ✅ Use separate projects for dev/prod
 - ❌ Never disable RLS in production
-
-### 4. Rate Limiting
-- ✅ Enforce on all OpenAI routes
-- ✅ Monitor Upstash dashboard for abuse
-- ✅ Set OpenAI spending limits
-- ❌ Don't skip rate limiting in production
 
 ---
 
@@ -428,30 +499,31 @@ After completing setup, verify each feature works:
 ### Daily Development
 ```bash
 # Start dev server
-npm run dev
+cd sturdy-app
+npm start
 
+# Choose platform (i/a/w)
 # Make changes
-# Test locally
-# Commit to git
+# App hot-reloads automatically
+# Test on device/simulator
 
-# Push to GitHub
+# Commit changes
+git add .
+git commit -m "feat: add feature"
 git push origin main
-
-# Vercel auto-deploys
-# Test on production URL
 ```
 
 ### Adding New Environment Variable
-1. Add to `.env.local` (local)
+1. Add to `.env` (local)
 2. Add to `.env.example` (documentation)
-3. Add to Vercel dashboard (production)
-4. Restart dev server / redeploy
+3. Add as EAS Secret (production)
+4. Restart dev server / rebuild app
 
 ### Rotating Secrets
 1. Generate new key in service dashboard
-2. Update `.env.local` immediately
-3. Update Vercel environment variables
-4. Redeploy app
+2. Update `.env` immediately
+3. Update EAS Secrets
+4. Rebuild and redeploy app
 5. Revoke old key
 
 ---
@@ -462,7 +534,7 @@ Once environment is set up:
 
 1. ✅ Verify all features work (checklist above)
 2. 📖 Read `/docs/DATABASE.md` to understand schema
-3. 🔒 Read `/docs/RATE_LIMITING.md` to understand cost protection
+3. 📱 Read platform-specific guides ([iOS_SETUP.md](./iOS_SETUP.md), [ANDROID_SETUP.md](./ANDROID_SETUP.md))
 4. 🏗️ Start building features!
 
 ---
@@ -470,23 +542,24 @@ Once environment is set up:
 ## Support Resources
 
 ### Documentation
+- Expo Docs: https://docs.expo.dev/
+- React Native Docs: https://reactnative.dev/
 - Supabase Docs: https://supabase.com/docs
 - OpenAI Docs: https://platform.openai.com/docs
-- Upstash Docs: https://docs.upstash.com/
-- Next.js Docs: https://nextjs.org/docs
+- EAS Build Docs: https://docs.expo.dev/build/introduction/
 
 ### Status Pages
+- Expo Status: https://status.expo.dev/
 - Supabase Status: https://status.supabase.com/
 - OpenAI Status: https://status.openai.com/
-- Upstash Status: https://status.upstash.com/
-- Vercel Status: https://www.vercel-status.com/
 
 ### Community
+- Expo Discord: https://chat.expo.dev/
 - Supabase Discord: https://discord.supabase.com
-- Next.js Discord: https://nextjs.org/discord
+- React Native Discord: https://reactnative.dev/help
 
 ---
 
 **Last Updated:** January 2026  
 **Estimated Setup Time:** 20-30 minutes  
-**Difficulty:** Beginner-friendly with screenshots
+**Difficulty:** Beginner-friendly

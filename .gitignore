@@ -1,15 +1,49 @@
+# Environment files
+.env
 .env.local
+
+# Dependencies
 node_modules/
-.next/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.ipa
+*.apk
+*.aab
+
+# macOS
 .DS_Store
+*.pem
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
 
 # Backup files
 *.bak
 *.backup
 *.tmp
-*.swp
-*~
 
-# Git artifacts and lock files
-*.lock
+# Git artifacts
 .git/index.lock
