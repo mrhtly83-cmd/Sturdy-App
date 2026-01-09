@@ -18,7 +18,7 @@ module.exports = {
         },
         teal: {
           300: '#4DD0E1',
-          500: '#208092', // Primary teal
+          500: '#208092', // Updated to match primary for consistency across landing/dashboard
           600: '#26A69A',
         },
       },
