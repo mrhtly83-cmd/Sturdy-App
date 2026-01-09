@@ -1,205 +1,146 @@
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { Collapsible } from '@/components/ui/collapsible';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Colors, Gradients, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/lib/auth-context';
+
+const utilities = [
+  'Spacing scale (4-28)',
+  'Radii (10-24)',
+  'Soft/medium shadows',
+  'Glass + card surfaces',
+  'Responsive typography',
+  'Moti micro-interactions',
+];
 
 export default function TabTwoScreen() {
   const { user, signOut } = useAuth();
-
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-          },
-        },
-      ]
-    );
-  };
+  const theme = useColorScheme() ?? 'light';
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <BlurView intensity={40} tint="dark" style={styles.header}>
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.headerTitle}>Settings</Text>
-            <Text style={styles.headerSubtitle}>Manage your account</Text>
-          </View>
-          <LinearGradient
-            colors={['#F87171', '#F97316']}
-            style={styles.avatarGradient}
-          >
-            <Text style={styles.avatarText}>
-              {user?.email?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          </LinearGradient>
-        </View>
-      </BlurView>
-
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Account Info */}
-        <BlurView intensity={40} tint="dark" style={styles.card}>
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Account Information</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>{user?.email}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>User ID</Text>
-              <Text style={styles.infoValue} numberOfLines={1}>
-                {user?.id?.substring(0, 8)}...
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Status</Text>
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Active</Text>
+    <ThemedView variant="plain" style={{ flex: 1 }}>
+      <StatusBar style="light" />
+      <LinearGradient
+        colors={[Gradients.accent[0], Gradients.accent[1], Colors[theme].background]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <ScrollView contentContainerStyle={styles.container}>
+        <AnimatedCard variant="glass" radius="lg" shadow="medium">
+          <BlurView intensity={40} tint={theme === 'light' ? 'light' : 'dark'} style={styles.header}>
+            <View style={styles.headerRow}>
+              <View style={{ gap: Spacing.xs }}>
+                <ThemedText type="headline">Design system</ThemedText>
+                <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+                  Explore the new calming palette, responsive type, and motion primitives.
+                </ThemedText>
               </View>
+              <LinearGradient colors={Gradients.warm} style={styles.avatarGradient}>
+                <ThemedText type="title" style={{ color: '#0F172A' }}>
+                  {user?.email?.charAt(0).toUpperCase() ?? 'S'}
+                </ThemedText>
+              </LinearGradient>
             </View>
-          </View>
-        </BlurView>
-
-        {/* Sign Out Button */}
-        <TouchableOpacity
-          style={styles.signOutButton}
-          onPress={handleSignOut}
-        >
-          <BlurView intensity={40} tint="dark" style={styles.signOutBlur}>
-            <Text style={styles.signOutText}>Sign Out</Text>
           </BlurView>
-        </TouchableOpacity>
+        </AnimatedCard>
 
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <Text style={styles.appInfoText}>Sturdy v1.0.0</Text>
-          <Text style={styles.appInfoText}>Made with ❤️ for parents</Text>
-        </View>
-      </View>
-    </View>
+        <AnimatedCard delay={80}>
+          <ThemedText type="headline">Utilities & tokens</ThemedText>
+          <View style={styles.utilityGrid}>
+            {utilities.map((item) => (
+              <ThemedView key={item} variant="muted" radius="pill" style={styles.utilityPill}>
+                <ThemedText type="caption" style={{ color: Colors[theme].mutedText }}>
+                  {item}
+                </ThemedText>
+              </ThemedView>
+            ))}
+          </View>
+          <Collapsible title="Responsive helpers">
+            <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+              Use `responsiveFont`, `responsiveSpacing`, and `useResponsiveValue` from the new
+              helper to adapt padding, sizing, and type to any screen.
+            </ThemedText>
+          </Collapsible>
+        </AnimatedCard>
+
+        <AnimatedCard delay={140}>
+          <ThemedText type="headline">Motion-ready components</ThemedText>
+          <ThemedText type="body" style={{ color: Colors[theme].mutedText, marginBottom: Spacing.sm }}>
+            Cards, buttons, and accordions ship with built-in fade/scale transitions via Moti and
+            Reanimated.
+          </ThemedText>
+          <View style={styles.row}>
+            <AnimatedButton label="Primary" onPress={() => {}} />
+            <AnimatedButton variant="ghost" label="Ghost" onPress={() => {}} />
+          </View>
+        </AnimatedCard>
+
+        <AnimatedCard delay={200}>
+          <ThemedText type="headline">Account</ThemedText>
+          <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+            Signed in as {user?.email ?? 'guest'}
+          </ThemedText>
+          <AnimatedButton
+            variant="ghost"
+            label="Sign out"
+            onPress={async () => {
+              await signOut();
+            }}
+            style={{ marginTop: Spacing.sm }}
+          />
+        </AnimatedCard>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#000',
+    padding: Spacing.gutter,
+    gap: Spacing.lg,
+    paddingBottom: Spacing.gutter * 1.5,
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 18,
+    padding: Spacing.lg,
+    overflow: 'hidden',
   },
-  headerContent: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: Spacing.sm,
     alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    marginTop: 4,
   },
   avatarGradient: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-  },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
-    marginBottom: 24,
-  },
-  cardContent: {
-    padding: 20,
-  },
-  cardTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  infoRow: {
+  utilityGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginVertical: Spacing.sm,
   },
-  infoLabel: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '500',
+  utilityPill: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
-  infoValue: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    maxWidth: 200,
-  },
-  statusBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: '#10B981',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  signOutButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  signOutBlur: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(248, 113, 113, 0.3)',
-  },
-  signOutText: {
-    color: '#F87171',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  appInfo: {
-    marginTop: 'auto',
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  appInfoText: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginVertical: 2,
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    flexWrap: 'wrap',
+    marginTop: Spacing.sm,
   },
 });

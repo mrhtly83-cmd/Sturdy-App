@@ -1,31 +1,47 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
+import { Colors, Typography } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  type?:
+    | 'display'
+    | 'title'
+    | 'headline'
+    | 'body'
+    | 'bodyStrong'
+    | 'callout'
+    | 'caption'
+    | 'footnote'
+    | 'link';
 };
 
 export function ThemedText({
   style,
   lightColor,
   darkColor,
-  type = 'default',
+  type = 'body',
   ...rest
 }: ThemedTextProps) {
+  const theme = useColorScheme() ?? 'light';
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
   return (
     <Text
       style={[
         { color },
-        type === 'default' ? styles.default : undefined,
+        type === 'display' ? styles.display : undefined,
         type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        type === 'headline' ? styles.headline : undefined,
+        type === 'body' ? styles.body : undefined,
+        type === 'bodyStrong' ? styles.bodyStrong : undefined,
+        type === 'callout' ? styles.callout : undefined,
+        type === 'caption' ? styles.caption : undefined,
+        type === 'footnote' ? styles.footnote : undefined,
+        type === 'link' ? [styles.link, { color: Colors[theme].tint }] : undefined,
         style,
       ]}
       {...rest}
@@ -34,27 +50,16 @@ export function ThemedText({
 }
 
 const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+  display: Typography.display,
+  title: Typography.title,
+  headline: Typography.headline,
+  body: Typography.body,
+  bodyStrong: Typography.bodyStrong,
+  callout: Typography.callout,
+  caption: Typography.caption,
+  footnote: Typography.footnote,
   link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+    ...Typography.callout,
+    textDecorationLine: 'none',
   },
 });

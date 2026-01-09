@@ -1,320 +1,218 @@
-import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { MotiView } from 'moti';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { Collapsible } from '@/components/ui/collapsible';
+import { HelloWave } from '@/components/hello-wave';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Colors, Gradients, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const highlights = [
+  {
+    title: 'Guided scripts',
+    description: 'Generate calm, attachment-informed words in seconds.',
+  },
+  {
+    title: 'Responsive layouts',
+    description: 'Feels at home on phones and tablets with adaptive spacing.',
+  },
+  {
+    title: 'Soothing visuals',
+    description: 'Glass surfaces, soft gradients, and micro-interactions.',
+  },
+];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const theme = useColorScheme() ?? 'light';
 
   return (
-    <View style={styles.container}>
+    <ThemedView variant="plain" style={{ flex: 1 }}>
       <StatusBar style="light" />
-      
-      {/* Video Background Placeholder - Use a dark gradient for now */}
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?w=1200' }}
-        style={styles.backgroundImage}
-        blurRadius={0}
-      >
-        {/* Dark overlay for readability */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.5)']}
-          style={styles.overlay}
-        />
-      </ImageBackground>
+      <LinearGradient
+        colors={[Gradients.primary[0], Gradients.primary[1], Colors[theme].background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{
+            padding: Spacing.gutter,
+            paddingBottom: Spacing.gutter * 1.5,
+            gap: Spacing.lg,
+          }}
+        >
+          <AnimatedCard variant="glass" radius="lg" shadow="medium">
+            <BlurView intensity={50} tint={theme === 'light' ? 'light' : 'dark'} style={styles.heroCard}>
+              <View style={styles.heroHeader}>
+                <HelloWave />
+                <ThemedText type="caption" style={{ color: Colors[theme].mutedText }}>
+                  Calm words on demand
+                </ThemedText>
+              </View>
+              <ThemedText type="display" style={styles.heroTitle}>
+                Sturdy is your pocket coach for crisis moments.
+              </ThemedText>
+              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                Just describe the moment. We deliver an evidence-based script with validation,
+                reframes, and the exact words to say.
+              </ThemedText>
+              <View style={styles.heroCtas}>
+                <AnimatedButton
+                  label="Generate a script"
+                  onPress={() => router.push('/(auth)/signup')}
+                />
+                <AnimatedButton
+                  variant="ghost"
+                  label="I already have an account"
+                  onPress={() => router.push('/(auth)/login')}
+                />
+              </View>
+              <View style={styles.badgesRow}>
+                <Badge text="Attachment Theory" />
+                <Badge text="IFS-informed" />
+                <Badge text="Responsive layouts" />
+              </View>
+            </BlurView>
+          </AnimatedCard>
 
-      {/* Content */}
-      <View style={styles.content}>
-        
-        {/* Top Bar with Glassmorphism */}
-        <BlurView intensity={40} tint="dark" style={styles.topBar}>
-          <View style={styles.topBarContent}>
-            <View style={styles.logo}>
-              <LinearGradient
-                colors={['#F87171', '#F97316']}
-                style={styles.logoGradient}
-              >
-                <Text style={styles.logoIcon}>✓</Text>
-              </LinearGradient>
-              <Text style={styles.logoText}>STURDY</Text>
+          <View style={styles.row}>
+            {highlights.map((item, index) => (
+              <AnimatedCard key={item.title} delay={index * 80} style={{ flex: 1 }}>
+                <ThemedText type="headline">{item.title}</ThemedText>
+                <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+                  {item.description}
+                </ThemedText>
+              </AnimatedCard>
+            ))}
+          </View>
+
+          <AnimatedCard delay={180}>
+            <ThemedText type="headline">Micro-interactions & motion</ThemedText>
+            <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+              Buttons, cards, and collapsibles now use Reanimated + Moti for subtle depth, scale,
+              and fade transitions.
+            </ThemedText>
+            <Collapsible title="See what changed">
+              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                • Reanimated 3 + gesture handler installed and configured
+              </ThemedText>
+              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                • Moti-powered buttons, cards, and accordions
+              </ThemedText>
+              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                • Responsive spacing, typography scale, and glass surfaces
+              </ThemedText>
+            </Collapsible>
+          </AnimatedCard>
+
+          <AnimatedCard delay={240}>
+            <ThemedText type="headline">Responsive examples</ThemedText>
+            <View style={styles.pillRow}>
+              <Pill text="Dynamic spacing" />
+              <Pill text="Responsive typography" />
+              <Pill text="Tablet-friendly cards" />
             </View>
-            
-            <View style={styles.authButtons}>
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={() => router.push('/(auth)/login')}
-              >
-                <Text style={styles.loginButtonText}>Login</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.signupButton}
-                onPress={() => router.push('/(auth)/signup')}
-              >
-                <LinearGradient
-                  colors={['#F87171', '#F97316']}
-                  style={styles.signupGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.signupButtonText}>Sign Up</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </BlurView>
+            <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+              Resize the simulator to see adaptive padding, type scales, and layout shifts tuned for
+              comfort on any device.
+            </ThemedText>
+          </AnimatedCard>
 
-        {/* Hero Content */}
-        <View style={styles.heroContent}>
-          {/* Badge */}
-          <BlurView intensity={40} tint="dark" style={styles.badge}>
-            <Text style={styles.badgeIcon}>⭐</Text>
-            <Text style={styles.badgeText}>Trusted by 10,000+ parents</Text>
-          </BlurView>
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 320 }}
+          >
+            <ThemedText type="footnote" style={{ color: Colors[theme].mutedText, textAlign: 'center' }}>
+              Safety first: Sturdy is coaching, not therapy. Crisis? In the US, call 988 or text 741741.
+            </ThemedText>
+          </MotiView>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
 
-          {/* Headline */}
-          <Text style={styles.headline}>
-            Calm words,{'\n'}on demand
-          </Text>
+function Badge({ text }: { text: string }) {
+  const theme = useColorScheme() ?? 'light';
+  return (
+    <ThemedView
+      variant="glass"
+      radius="pill"
+      style={{
+        paddingHorizontal: Spacing.lg,
+        paddingVertical: Spacing.sm,
+        borderWidth: 1,
+        borderColor: Colors[theme].border,
+      }}
+    >
+      <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+        {text}
+      </ThemedText>
+    </ThemedView>
+  );
+}
 
-          {/* Subheadline */}
-          <Text style={styles
-              style={styles.primaryCta}
-              onPress={() => router.push('/(auth)/signup')}
-            >
-              <LinearGradient
-                colors={['#F87171', '#F97316']}
-                style={styles.primaryGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={styles.primaryCtaText}>Get Started Free</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push('/(auth)/login')}y: 0 }}
-              >
-                <Text style={styles.primaryCtaText}>Get Started Free</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity>
-              <BlurView intensity={40} tint="dark" style={styles.secondaryCta}>
-                <Text style={styles.secondaryCtaText}>See Pricing</Text>
-              </BlurView>
-            </TouchableOpacity>
-          </View>
-
-          {/* Trust Indicators */}
-          <View style={styles.trustContainer}>
-            <Text style={styles.trustText}>✓ Free 7-day trial • No credit card required</Text>
-          </View>
-
-          {/* Social Proof */}
-          <BlurView intensity={40} tint="dark" style={styles.socialProof}>
-            <Text style={styles.starsText}>⭐⭐⭐⭐⭐</Text>
-            <Text style={styles.ratingText}>4.9/5</Text>
-            <Text style={styles.reviewsText}>(2,000+ reviews)</Text>
-          </BlurView>
-        </View>
-      </View>
-    </View>
+function Pill({ text }: { text: string }) {
+  const theme = useColorScheme() ?? 'light';
+  return (
+    <ThemedView
+      variant="muted"
+      radius="pill"
+      style={{ paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm }}
+    >
+      <ThemedText type="caption" style={{ color: Colors[theme].mutedText }}>
+        {text}
+      </ThemedText>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    width: width,
-    height: height,
-    opacity: 0.7,
-  },
-  overlay: {
-    position: 'absolute',
-    width: width,
-    height: height,
-  },
-  content: {
-    flex: 1,
-    paddingTop: 60,
-  },
-  topBar: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+  heroCard: {
+    borderRadius: 20,
+    padding: Spacing.xl,
     overflow: 'hidden',
+    gap: Spacing.md,
   },
-  topBarContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  logo: {
+  heroHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
-  logoGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+  heroTitle: {
+    marginTop: Spacing.sm,
   },
-  logoIcon: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  logoText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: -0.5,
-  },
-  authButtons: {
+  heroCtas: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+    flexWrap: 'wrap',
   },
-  loginButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  signupButton: {
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  signupGradient: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  signupButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  heroContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    gap: 24,
-  },
-  badge: {
+  badgesRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    overflow: 'hidden',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
-  badgeIcon: {
-    fontSize: 16,
+  row: {
+    flexDirection: 'column',
+    gap: Spacing.sm,
   },
-  badgeText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  headline: {
-    color: '#fff',
-    fontSize: 48,
-    fontWeight: '900',
-    textAlign: 'center',
-    lineHeight: 56,
-    letterSpacing: -1,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
-  },
-  subheadline: {
-    color: '#F3F4F6',
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-    maxWidth: 320,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 5,
-  },
-  ctaContainer: {
-    width: '100%',
-    gap: 12,
-    paddingTop: 16,
-  },
-  primaryCta: {
-    width: '100%',
-    borderRadius: 28,
-    overflow: 'hidden',
-  },
-  primaryGradient: {
-    paddingVertical: 18,
-    alignItems: 'center',
-  },
-  primaryCtaText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  secondaryCta: {
-    width: '100%',
-    paddingVertical: 18,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  secondaryCtaText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  trustContainer: {
-    marginTop: 8,
-  },
-  trustText: {
-    color: '#E5E7EB',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  socialProof: {
+  pillRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    overflow: 'hidden',
-    marginTop: 8,
-  },
-  starsText: {
-    fontSize: 16,
-  },
-  ratingText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  reviewsText: {
-    color: '#D1D5DB',
-    fontSize: 14,
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginVertical: Spacing.sm,
   },
 });
