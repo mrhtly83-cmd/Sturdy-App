@@ -2,10 +2,13 @@ import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, Dimensions }
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -40,10 +43,16 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.authButtons}>
-              <TouchableOpacity style={styles.loginButton}>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={() => router.push('/(auth)/login')}
+              >
                 <Text style={styles.loginButtonText}>Login</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.signupButton}>
+              <TouchableOpacity
+                style={styles.signupButton}
+                onPress={() => router.push('/(auth)/signup')}
+              >
                 <LinearGradient
                   colors={['#F87171', '#F97316']}
                   style={styles.signupGradient}
@@ -71,18 +80,21 @@ export default function HomeScreen() {
           </Text>
 
           {/* Subheadline */}
-          <Text style={styles.subheadline}>
-            Science-backed parenting scripts when you need them most.
-          </Text>
-
-          {/* CTA Buttons */}
-          <View style={styles.ctaContainer}>
-            <TouchableOpacity style={styles.primaryCta}>
+          <Text style={styles
+              style={styles.primaryCta}
+              onPress={() => router.push('/(auth)/signup')}
+            >
               <LinearGradient
                 colors={['#F87171', '#F97316']}
                 style={styles.primaryGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.primaryCtaText}>Get Started Free</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/(auth)/login')}y: 0 }}
               >
                 <Text style={styles.primaryCtaText}>Get Started Free</Text>
               </LinearGradient>
