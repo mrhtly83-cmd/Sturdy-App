@@ -197,23 +197,33 @@ We customize scripts for:
 
 ## 🎨 Design System
 
-Built on **Clinical Luxury**—therapeutic function + premium aesthetics.
+Built on **Modern Glassmorphism**—transparent layers with premium aesthetics and mobile-first experience.
 
 ### **Color Palette**
 
 ```
-Primary (Action): #208092 Teal (trust, calm)
-Background: #F8FAFC Off-white (clean, spacious)
-Text: #0F172A Deep Navy (readable, warm)
-Accent (Urgent): #CA8A04 Muted Gold (SOS button, not red alarm)
+Primary (Action): Coral #F87171 to #F97316 gradient (warm, inviting)
+Secondary: Teal #14B8A6 to #0EA5E9 gradient (calm, trust)
+Background: Black #000000 with video transparency (immersive, modern)
+Glass Elements: White 10-20% opacity with backdrop blur (premium, clean)
+Text: White #FFFFFF with shadows (high contrast, readable)
 ```
 
 ### **Typography**
 
-- **Font**: Inter (high readability during stress)
-- **Scale**: 16pt+ minimum (accessibility during crisis)
-- **Line Height**: 1.625 (generous breathing room)
-- **Spacing**: 16px/24px/32px grid (consistent rhythm)
+- **Font**: System fonts (optimal performance, native feel)
+- **Headlines**: 3xl-6xl font-black (bold, impactful)
+- **Body**: Base-lg font-medium (clear, approachable)
+- **Button Text**: lg font-bold (confident, actionable)
+
+### **Layout**
+Glassmorphism**: Frosted glass overlays with backdrop blur
+- **Transparent Video**: Hero background at 70% opacity
+- **Loading**: Smooth transitions, no harsh jumps
+- **Feedback**: Hover states with scale transforms
+- **Mobile-First**: Centered container, app-like experience
+- **No Dark Patterns**: Clear CTAs, easy navigation
+- **Shadows**: 2xl (premium elevation)
 
 ### **Interaction**
 
