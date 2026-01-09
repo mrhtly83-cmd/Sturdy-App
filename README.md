@@ -266,7 +266,9 @@ git clone https://github.com/yourusername/sturdy.git
 cd sturdy
 
 # Install root dependencies
-npm instaldependencies
+npm install
+
+# Install mobile app dependencies
 cd sturdy-app
 npm install
 
@@ -278,9 +280,10 @@ cp .env.example .env
 npm start
 
 # Choose platform:
-# - Press 'i' for iOS simulator
+# - Press 'i' for iOS simulator (Mac only)
 # - Press 'a' for Android emulator
-# - Press 'w' for web preview Expo Go app for physical device
+# - Press 'w' for web preview (testing only)
+# - Scan QR code with Expo Go app for physical device
 ```
 
 **Database Setup:**
