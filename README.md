@@ -238,30 +238,24 @@ Glassmorphism**: Frosted glass overlays with backdrop blur
 
 ### **For Users**
 
-**Web App:**
-1. Visit https://sturdy-app.vercel.app (or sturdy.app)
-2. Sign up with email (no phone number required)
-3. Add your child (name, age, neurotype)
-4. Tap SOS when you need help
-5. Use the script immediately
-
 **Mobile App (iOS/Android):**
 1. Download Sturdy from the App Store or Google Play (coming soon)
-2. Sign in with same account
-3. Use on-the-go with native mobile experience
+2. Sign up with email (no phone number required)  
+3. Add your child (name, age, neurotype)
+4. Tap SOS when you need help
+5. Use the script immediately - anywhere, anytime
 
 Free to try. Premium whenever you're ready.
 
 ### **For Developers**
 
 **Tech Stack:**
-- **Web Frontend**: Next.js 14 (App Router) + React 18 + TypeScript
-- **Mobile Frontend**: React Native + Expo
-- **Styling**: Tailwind CSS (web) + React Native StyleSheet (mobile)
+- **Frontend**: React Native + Expo 52
+- **Styling**: React Native StyleSheet with Glassmorphism design
 - **Backend**: Supabase (PostgreSQL + Auth + Real-time)
-- **AI**: OpenAI GPT-4 (with safety guards)
+- **AI**: OpenAI GPT-4o-mini (with safety guards)
 - **Payments**: Stripe (Weekly/Monthly/Lifetime subscriptions)
-- **Deployment**: Vercel (web) + EAS Build (mobile)
+- **Deployment**: EAS Build for iOS/Android
 - **Database**: PostgreSQL with Row Level Security (RLS)
 
 **Setup:**
@@ -272,32 +266,13 @@ git clone https://github.com/yourusername/sturdy.git
 cd sturdy
 
 # Install root dependencies
-npm install
-
-# === WEB APP SETUP ===
-cd nextjs-app
-
-# Install dependencies
+npm instaldependencies
+cd sturdy-app
 npm install
 
 # Set up environment
-cp .env.example .env.local
-# Add: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, OPENAI_API_KEY, STRIPE_SECRET_KEY
-
-# Run web app locally
-npm run dev
-
-# Open browser
-open http://localhost:3000
-
-# === MOBILE APP SETUP ===
-cd ../sturdy-app
-
-# Install dependencies
-npm install
-
-# Set up environment (add to app.json extra section)
-# EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY
+cp .env.example .env
+# Add: EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY
 
 # Run mobile app
 npm start
@@ -305,8 +280,7 @@ npm start
 # Choose platform:
 # - Press 'i' for iOS simulator
 # - Press 'a' for Android emulator
-# - Press 'w' for web (Expo web)
-# - Scan QR code with Expo Go app for physical device
+# - Press 'w' for web preview Expo Go app for physical device
 ```
 
 **Database Setup:**

@@ -1,13 +1,13 @@
 {
-  "name": "sturdy-monorepo",
+  "name": "sturdy-mobile",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:web": "cd nextjs-app && npm run dev",
-    "dev:mobile": "cd sturdy-app && npm start",
-    "install:all": "npm install && cd nextjs-app && npm install && cd ../sturdy-app && npm install",
-    "build:web": "cd nextjs-app && npm run build",
-    "start:web": "cd nextjs-app && npm start"
+    "dev": "cd sturdy-app && npm start",
+    "start": "cd sturdy-app && npm start",
+    "install": "cd sturdy-app && npm install",
+    "android": "cd sturdy-app && npm run android",
+    "ios": "cd sturdy-app && npm run ios"
   },
   "dependencies": {
     "@react-navigation/native": "^7.1.26",
