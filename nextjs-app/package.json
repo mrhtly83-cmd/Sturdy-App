@@ -7,7 +7,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "dev":  "next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -19,15 +19,16 @@
     "@upstash/redis": "^1.28.0",
     "next": "^14.0.0",
     "openai": "^6.15.0",
-    "react":  "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0"
   },
-  "devDependencies":  {
+  "devDependencies": {
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.16",
-    "eslint":  "^8",
+    "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
