@@ -94,8 +94,7 @@ export default function HomePage() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-              <buttongap-3 justify-center items-center pt-4">
+            <div className="flex flex-col gap-3 justify-center items-center pt-4">
               <button
                 onClick={() => router.push(user ? '/dashboard' : '/auth/signup')}
                 className="w-full px-10 py-4 bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-coral-500/50 transition-all duration-300 transform hover:scale-105"
@@ -127,7 +126,8 @@ export default function HomePage() {
                 ))}
               </div>
               <span className="text-white font-bold">4.9/5</span>
-              <span className="text-gray-300 text-sm">(2,000+ reviews)
+              <span className="text-gray-300 text-sm">(2,000+ reviews)</span>
+            </div>
           </div>
         </div>
       </div>
