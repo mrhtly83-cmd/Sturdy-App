@@ -212,10 +212,10 @@ tsc --noEmit           # TypeScript checks
 
 ## 📚 Additional Resources
 
-- [Next.js Documentation](https://nextjs.org/docs)
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Native Documentation](https://reactnative.dev/)
 - [Supabase Documentation](https://supabase.com/docs)
+- [EAS Build Documentation](https://docs.expo.dev/build/introduction/)
 
 ## 🤝 Contributing
 

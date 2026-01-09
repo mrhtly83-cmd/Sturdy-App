@@ -1,48 +1,32 @@
-# ✅ Sturdy - Web & Mobile Setup Complete!
+# ✅ Sturdy - Mobile App Setup Complete!
 
 ## 🎉 What's Ready
 
-Your project now supports **both web and mobile** versions:
-
-### ✅ Web App (Next.js)
-- Location: `nextjs-app/`
-- Status: ✅ Dependencies installed
-- Run: `npm run dev:web`
-- URL: http://localhost:3000
+Your project is configured as a **mobile-first application**:
 
 ### ✅ Mobile App (React Native + Expo)
 - Location: `sturdy-app/`
-- Status: ✅ Dependencies installed, @supabase/supabase-js fixed
-- Run: `npm run dev:mobile`
-- Platforms: iOS, Android, Web
+- Status: ✅ Dependencies installed, fully configured
+- Run: `npm run dev` or `npm start`
+- Platforms: iOS, Android, Web (preview only)
 
-### ✅ Shared Backend
+### ✅ Backend
 - Platform: Supabase
-- Status: ✅ Configured for both apps
-- Same database, auth, and data sync
+- Status: ✅ Configured for mobile app
+- Features: Database, auth, real-time sync
 
 ## 🚀 Quick Start
 
-### Run Web App
-```bash
-npm run dev:web
-# Opens at http://localhost:3000
-```
-
 ### Run Mobile App
 ```bash
-npm run dev:mobile
+npm run dev
+# Or: npm start
+
 # Then press:
 # 'i' for iOS simulator
 # 'a' for Android emulator  
 # 'w' for web preview
 # Or scan QR code with Expo Go app
-```
-
-### Run Both Apps
-```bash
-./dev.sh
-# Choose option 3
 ```
 
 ## 📱 Mobile Development Options
@@ -61,15 +45,15 @@ npm run dev:mobile
 4. **Web Preview**
    - Press 'w' after starting
 
-## 🔧 What Was Fixed
+## 🔧 What's Configured
 
-1. ✅ Installed `@supabase/supabase-js` in mobile app
-2. ✅ Fixed `expo-constants` version conflict
-3. ✅ Configured environment variables with `EXPO_PUBLIC_` prefix
-4. ✅ Created app.config.js for dynamic config
-5. ✅ Set up .env files for both apps
-6. ✅ Added helper scripts to root package.json
-7. ✅ Created development guide (DEVELOPMENT.md)
+1. ✅ Mobile app with React Native & Expo
+2. ✅ Supabase integration with `@supabase/supabase-js`
+3. ✅ Environment variables with `EXPO_PUBLIC_` prefix
+4. ✅ Expo Router for navigation
+5. ✅ Authentication system with context
+6. ✅ Glassmorphism design system
+7. ✅ Development guide (DEVELOPMENT.md)
 
 ## 📚 Documentation
 
@@ -81,19 +65,19 @@ npm run dev:mobile
 
 1. **Start developing!**
    ```bash
-   npm run dev:web      # For web features
-   npm run dev:mobile   # For mobile features
+   npm start   # Start mobile development server
    ```
 
 2. **Test on multiple platforms**
-   - Web browser
    - iOS device/simulator
    - Android device/emulator
+   - Web preview (for quick testing)
 
-3. **Share the same backend**
-   - Both apps use the same Supabase project
-   - Users can log in on any platform
-   - Data syncs automatically
+3. **Build features**
+   - Complete authentication flow
+   - Add child profile management
+   - Implement AI script generation
+   - Build journal/history view
 
 ## 🐛 If You Get Errors
 
@@ -103,10 +87,6 @@ npm run dev:mobile
 
 ### Dependencies Not Found
 ```bash
-# Web app
-cd nextjs-app && npm install
-
-# Mobile app  
 cd sturdy-app && npm install
 ```
 
@@ -121,4 +101,4 @@ npm install
 
 **You're all set! 🚀**
 
-Run `npm run dev:web` or `npm run dev:mobile` to start building!
+Run `npm start` to begin mobile development!
