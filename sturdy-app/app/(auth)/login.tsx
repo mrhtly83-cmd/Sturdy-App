@@ -22,10 +22,11 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const router = useRouter();
-  const { signIn, signInWithOAuth } = useAuth();
+  const { signIn, signInWithOAuth, signInWithGoogleOAuth } = useAuth();
   const theme = useColorScheme() ?? 'dark';
 
   const handleLogin = async () => {
@@ -59,6 +60,16 @@ export default function LoginScreen() {
 
     if (error) {
       Alert.alert('OAuth Failed', error.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    const { error } = await signInWithGoogleOAuth();
+    setGoogleLoading(false);
+
+    if (error) {
+      Alert.alert('Google Sign-In Failed', error.message);
     }
   };
 
@@ -138,12 +149,34 @@ export default function LoginScreen() {
                   size="lg"
                   onPress={handleLogin}
                   loading={loading}
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                 />
 
                 <View style={styles.divider}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or continue with</Text>
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <AnimatedButton
+                  variant="outline"
+                  size="lg"
+                  onPress={handleGoogleSignIn}
+                  loading={googleLoading}
+                  disabled={loading || googleLoading}
+                  style={styles.googleButton}
+                >
+                  <View style={styles.googleButtonContent}>
+                    <Text style={styles.googleLogo}>G</Text>
+                    <Text style={styles.googleButtonText}>
+                      {googleLoading ? 'Signing in...' : 'Continue with Google'}
+                    </Text>
+                  </View>
+                </AnimatedButton>
+
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or try other methods</Text>
                   <View style={styles.dividerLine} />
                 </View>
 
@@ -152,18 +185,8 @@ export default function LoginScreen() {
                     variant="outline"
                     size="md"
                     style={{ flex: 1 }}
-                    onPress={() => handleOAuthLogin('google')}
-                    disabled={loading}
-                  >
-                    <Text style={styles.oauthText}>Google</Text>
-                  </AnimatedButton>
-
-                  <AnimatedButton
-                    variant="outline"
-                    size="md"
-                    style={{ flex: 1 }}
                     onPress={() => handleOAuthLogin('apple')}
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                   >
                     <Text style={styles.oauthText}>Apple</Text>
                   </AnimatedButton>
@@ -176,7 +199,7 @@ export default function LoginScreen() {
                     variant="ghost"
                     size="sm"
                     onPress={() => router.push('/(auth)/signup')}
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                   />
                 </View>
               </View>
@@ -250,7 +273,7 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: spacing.xl,
+    marginVertical: spacing.lg,
   },
   dividerLine: {
     flex: 1,
@@ -261,6 +284,27 @@ const styles = StyleSheet.create({
     color: colors.gray[400],
     fontSize: typography.fontSize.sm,
     marginHorizontal: spacing.md,
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderWidth: 1,
+  },
+  googleButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  googleLogo: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: '#4285F4',
+  },
+  googleButtonText: {
+    color: '#1F2937',
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
   },
   oauthContainer: {
     flexDirection: 'row',
