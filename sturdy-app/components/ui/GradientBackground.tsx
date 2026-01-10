@@ -6,7 +6,7 @@ import { gradients } from '@/lib/theme';
 
 interface GradientBackgroundProps {
   children?: ReactNode;
-  colors?: string[];
+  colors?: readonly [string, string, ...string[]];
   animated?: boolean;
   start?: { x: number; y: number };
   end?: { x: number; y: number };
@@ -31,7 +31,7 @@ export function GradientBackground({
   end = { x: 1, y: 1 },
   style,
 }: GradientBackgroundProps) {
-  const colors = customColors ?? [...gradients.primary];
+  const colors = customColors ?? gradients.primary;
 
   if (animated) {
     return (

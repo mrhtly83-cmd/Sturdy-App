@@ -51,7 +51,7 @@ export default function HomeScreen() {
       <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
       
       {/* Gradient Background */}
-      <GradientBackground colors={[...themeGradients.primary, Colors[theme].background]} />
+      <GradientBackground colors={[themeGradients.primary[0], themeGradients.primary[1], Colors[theme].background]} />
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
