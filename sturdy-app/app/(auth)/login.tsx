@@ -1,283 +1,256 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Alert,
-  ActivityIndicator,
-} from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
-import { BlurView } from 'expo-blur'
-import { useRouter } from 'expo-router'
-import { useAuth } from '@/lib/auth-context'
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/lib/auth-context';
+import { AnimatedInput } from '@/components/ui/AnimatedInput';
+import { AnimatedButton } from '@/components/ui/animated-button';
+import { AnimatedContainer } from '@/components/ui/AnimatedContainer';
+import { BlurView } from '@/components/ui/BlurView';
+import { colors, spacing, radius, typography } from '@/lib/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { signIn, signInWithOAuth } = useAuth()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const router = useRouter();
+  const { signIn, signInWithOAuth } = useAuth();
+  const theme = useColorScheme() ?? 'dark';
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields')
-      return
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+
+    // Validate
+    if (!email) {
+      setEmailError('Email is required');
+      return;
+    }
+    if (!password) {
+      setPasswordError('Password is required');
+      return;
     }
 
-    setLoading(true)
-    const { error } = await signIn(email, password)
-    setLoading(false)
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
 
     if (error) {
-      Alert.alert('Login Failed', error.message)
-    } else {
-      // Navigation will be handled by auth state change
+      Alert.alert('Login Failed', error.message);
     }
-  }
+  };
 
   const handleOAuthLogin = async (provider: 'google' | 'apple') => {
-    setLoading(true)
-    const { error } = await signInWithOAuth(provider)
-    setLoading(false)
+    setLoading(true);
+    const { error } = await signInWithOAuth(provider);
+    setLoading(false);
 
     if (error) {
-      Alert.alert('OAuth Failed', error.message)
+      Alert.alert('OAuth Failed', error.message);
     }
-  }
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <View style={styles.container}>
+      <LinearGradient
+        colors={[colors.background.dark, colors.gray[900]]}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <LinearGradient
-            colors={['#F87171', '#F97316']}
-            style={styles.logoGradient}
-          >
-            <Text style={styles.logoIcon}>✓</Text>
-          </LinearGradient>
-          <Text style={styles.logoText}>STURDY</Text>
-          <Text style={styles.subtitle}>Welcome back</Text>
-        </View>
-
-        {/* Login Form */}
-        <BlurView intensity={40} tint="dark" style={styles.formCard}>
-          <View style={styles.formContent}>
-            <Text style={styles.formTitle}>Sign in to continue</Text>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                editable={!loading}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                editable={!loading}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={() => Alert.alert('Coming Soon', 'Password reset will be available soon')}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={handleLogin}
-              disabled={loading}
-            >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo */}
+          <AnimatedContainer animation="fadeIn" delay={100}>
+            <View style={styles.logoContainer}>
               <LinearGradient
-                colors={['#F87171', '#F97316']}
-                style={styles.loginGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                colors={[colors.primary[400], colors.primary[600]]}
+                style={styles.logoGradient}
               >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loginButtonText}>Sign In</Text>
-                )}
+                <Text style={styles.logoIcon}>✓</Text>
               </LinearGradient>
-            </TouchableOpacity>
-
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.dividerLine} />
+              <Text style={styles.logoText}>STURDY</Text>
+              <Text style={styles.subtitle}>Welcome back</Text>
             </View>
+          </AnimatedContainer>
 
-            <View style={styles.oauthContainer}>
-              <TouchableOpacity
-                style={styles.oauthButton}
-                onPress={() => handleOAuthLogin('google')}
-                disabled={loading}
-              >
-                <BlurView intensity={40} tint="dark" style={styles.oauthBlur}>
-                  <Text style={styles.oauthIcon}>G</Text>
-                  <Text style={styles.oauthText}>Google</Text>
-                </BlurView>
-              </TouchableOpacity>
+          {/* Login Form */}
+          <AnimatedContainer animation="slideUp" delay={200}>
+            <BlurView intensity="light" tint="dark" style={styles.formCard}>
+              <View style={styles.formContent}>
+                <Text style={styles.formTitle}>Sign in to continue</Text>
 
-              <TouchableOpacity
-                style={styles.oauthButton}
-                onPress={() => handleOAuthLogin('apple')}
-                disabled={loading}
-              >
-                <BlurView intensity={40} tint="dark" style={styles.oauthBlur}>
-                  <Text style={styles.oauthIcon}></Text>
-                  <Text style={styles.oauthText}>Apple</Text>
-                </BlurView>
-              </TouchableOpacity>
-            </View>
+                <AnimatedInput
+                  label="Email"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    setEmailError('');
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  editable={!loading}
+                  error={emailError}
+                />
 
-            <View style={styles.signupContainer}>
-              <Text style={styles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(auth)/signup')}
-                disabled={loading}
-              >
-                <Text style={styles.signupLink}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </BlurView>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  )
+                <AnimatedInput
+                  label="Password"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setPasswordError('');
+                  }}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  editable={!loading}
+                  error={passwordError}
+                />
+
+                <AnimatedButton
+                  label="Forgot password?"
+                  variant="ghost"
+                  size="sm"
+                  style={styles.forgotButton}
+                  onPress={() => Alert.alert('Coming Soon', 'Password reset will be available soon')}
+                />
+
+                <AnimatedButton
+                  label="Sign In"
+                  variant="primary"
+                  size="lg"
+                  onPress={handleLogin}
+                  loading={loading}
+                  disabled={loading}
+                />
+
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or continue with</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <View style={styles.oauthContainer}>
+                  <AnimatedButton
+                    variant="outline"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => handleOAuthLogin('google')}
+                    disabled={loading}
+                  >
+                    <Text style={styles.oauthText}>Google</Text>
+                  </AnimatedButton>
+
+                  <AnimatedButton
+                    variant="outline"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => handleOAuthLogin('apple')}
+                    disabled={loading}
+                  >
+                    <Text style={styles.oauthText}>Apple</Text>
+                  </AnimatedButton>
+                </View>
+
+                <View style={styles.signupContainer}>
+                  <Text style={styles.signupText}>Don't have an account? </Text>
+                  <AnimatedButton
+                    label="Sign Up"
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => router.push('/(auth)/signup')}
+                    disabled={loading}
+                  />
+                </View>
+              </View>
+            </BlurView>
+          </AnimatedContainer>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: colors.background.dark,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: spacing['2xl'],
   },
   logoGradient: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+    width: 80,
+    height: 80,
+    borderRadius: radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   logoIcon: {
     color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: typography.fontSize['4xl'],
+    fontWeight: typography.fontWeight.bold,
   },
   logoText: {
     color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
     letterSpacing: -0.5,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    color: '#9CA3AF',
-    fontSize: 16,
-    fontWeight: '500',
+    color: colors.gray[400],
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.medium,
   },
   formCard: {
-    borderRadius: 24,
+    borderRadius: radius['2xl'],
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
   },
   formContent: {
-    padding: 24,
+    padding: spacing.xl,
   },
   formTitle: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 24,
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    marginBottom: spacing.xl,
     textAlign: 'center',
   },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  label: {
-    color: '#E5E7EB',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: '#fff',
-    fontSize: 16,
-  },
-  forgotPassword: {
+  forgotButton: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#F87171',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  loginButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 24,
-  },
-  loginGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginBottom: spacing.lg,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginVertical: spacing.xl,
   },
   dividerLine: {
     flex: 1,
@@ -285,38 +258,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   dividerText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    marginHorizontal: 12,
+    color: colors.gray[400],
+    fontSize: typography.fontSize.sm,
+    marginHorizontal: spacing.md,
   },
   oauthContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  oauthButton: {
-    flex: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  oauthBlur: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    gap: 8,
-  },
-  oauthIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
   oauthText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
   },
   signupContainer: {
     flexDirection: 'row',
@@ -324,12 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signupText: {
-    color: '#9CA3AF',
-    fontSize: 14,
+    color: colors.gray[400],
+    fontSize: typography.fontSize.sm,
   },
-  signupLink: {
-    color: '#F87171',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-})
+});

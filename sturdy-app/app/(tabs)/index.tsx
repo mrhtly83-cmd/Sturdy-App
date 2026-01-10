@@ -4,30 +4,42 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { AnimatedCard } from '@/components/ui/animated-card';
+import { AnimatedContainer } from '@/components/ui/AnimatedContainer';
+import { GradientBackground } from '@/components/ui/GradientBackground';
 import { Collapsible } from '@/components/ui/collapsible';
 import { HelloWave } from '@/components/hello-wave';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors, Gradients, Spacing } from '@/constants/theme';
+import { colors, spacing, radius, typography, gradients as themeGradients } from '@/lib/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const highlights = [
   {
     title: 'Guided scripts',
     description: 'Generate calm, attachment-informed words in seconds.',
+    icon: '📝',
   },
   {
     title: 'Responsive layouts',
     description: 'Feels at home on phones and tablets with adaptive spacing.',
+    icon: '📱',
   },
   {
     title: 'Soothing visuals',
     description: 'Glass surfaces, soft gradients, and micro-interactions.',
+    icon: '✨',
   },
+];
+
+const features = [
+  { label: 'Attachment Theory', color: colors.secondary[500] },
+  { label: 'IFS-informed', color: colors.primary[500] },
+  { label: 'Responsive design', color: colors.accent[500] },
 ];
 
 export default function HomeScreen() {
@@ -35,128 +47,172 @@ export default function HomeScreen() {
   const theme = useColorScheme() ?? 'light';
 
   return (
-    <ThemedView variant="plain" style={{ flex: 1 }}>
-      <StatusBar style="light" />
-      <LinearGradient
-        colors={[Gradients.primary[0], Gradients.primary[1], Colors[theme].background]}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
+    <View style={{ flex: 1 }}>
+      <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
+      
+      {/* Gradient Background */}
+      <GradientBackground colors={[...themeGradients.primary, Colors[theme].background]} />
+
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={{
-            padding: Spacing.gutter,
-            paddingBottom: Spacing.gutter * 1.5,
-            gap: Spacing.lg,
+            padding: spacing.xl,
+            paddingBottom: spacing['2xl'],
+            gap: spacing.lg,
           }}
         >
-          <AnimatedCard variant="glass" radius="lg" shadow="medium">
-            <BlurView intensity={50} tint={theme === 'light' ? 'light' : 'dark'} style={styles.heroCard}>
-              <View style={styles.heroHeader}>
-                <HelloWave />
-                <ThemedText type="caption" style={{ color: Colors[theme].mutedText }}>
-                  Calm words on demand
+          {/* Hero Section */}
+          <AnimatedContainer animation="fadeIn" delay={100}>
+            <AnimatedCard variant="glass" radiusSize="lg" shadow="medium">
+              <BlurView intensity={50} tint={theme === 'light' ? 'light' : 'dark'} style={styles.heroCard}>
+                <View style={styles.heroHeader}>
+                  <HelloWave />
+                  <ThemedText type="caption" style={{ color: Colors[theme].mutedText }}>
+                    Calm words on demand
+                  </ThemedText>
+                </View>
+                
+                <ThemedText type="display" style={styles.heroTitle}>
+                  Sturdy is your pocket coach for crisis moments.
                 </ThemedText>
-              </View>
-              <ThemedText type="display" style={styles.heroTitle}>
-                Sturdy is your pocket coach for crisis moments.
-              </ThemedText>
-              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
-                Just describe the moment. We deliver an evidence-based script with validation,
-                reframes, and the exact words to say.
-              </ThemedText>
-              <View style={styles.heroCtas}>
-                <AnimatedButton
-                  label="Generate a script"
-                  onPress={() => router.push('/(auth)/signup')}
-                />
-                <AnimatedButton
-                  variant="ghost"
-                  label="I already have an account"
-                  onPress={() => router.push('/(auth)/login')}
-                />
-              </View>
-              <View style={styles.badgesRow}>
-                <Badge text="Attachment Theory" />
-                <Badge text="IFS-informed" />
-                <Badge text="Responsive layouts" />
-              </View>
-            </BlurView>
-          </AnimatedCard>
+                
+                <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                  Just describe the moment. We deliver an evidence-based script with validation,
+                  reframes, and the exact words to say.
+                </ThemedText>
+                
+                <View style={styles.heroCtas}>
+                  <AnimatedButton
+                    label="Generate a script"
+                    variant="primary"
+                    size="lg"
+                    onPress={() => router.push('/(auth)/signup')}
+                  />
+                  <AnimatedButton
+                    variant="ghost"
+                    size="md"
+                    label="I already have an account"
+                    onPress={() => router.push('/(auth)/login')}
+                  />
+                </View>
+                
+                <View style={styles.badgesRow}>
+                  {features.map((feature) => (
+                    <Badge key={feature.label} text={feature.label} color={feature.color} />
+                  ))}
+                </View>
+              </BlurView>
+            </AnimatedCard>
+          </AnimatedContainer>
 
-          <View style={styles.row}>
+          {/* Highlights Section */}
+          <View style={styles.highlightsContainer}>
             {highlights.map((item, index) => (
-              <AnimatedCard key={item.title} delay={index * 80} style={{ flex: 1 }}>
-                <ThemedText type="headline">{item.title}</ThemedText>
-                <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
-                  {item.description}
-                </ThemedText>
-              </AnimatedCard>
+              <AnimatedContainer key={item.title} animation="slideUp" delay={200 + index * 100}>
+                <AnimatedCard
+                  pressable
+                  onPress={() => {}}
+                  style={{ flex: 1 }}
+                >
+                  <View style={styles.highlightCard}>
+                    <Text style={styles.highlightIcon}>{item.icon}</Text>
+                    <ThemedText type="headline">{item.title}</ThemedText>
+                    <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+                      {item.description}
+                    </ThemedText>
+                  </View>
+                </AnimatedCard>
+              </AnimatedContainer>
             ))}
           </View>
 
-          <AnimatedCard delay={180}>
-            <ThemedText type="headline">Micro-interactions & motion</ThemedText>
-            <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
-              Buttons, cards, and collapsibles now use Reanimated + Moti for subtle depth, scale,
-              and fade transitions.
-            </ThemedText>
-            <Collapsible title="See what changed">
-              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
-                • Reanimated 3 + gesture handler installed and configured
+          {/* Features Section */}
+          <AnimatedContainer animation="slideUp" delay={500}>
+            <AnimatedCard gradientBorder>
+              <ThemedText type="headline">Micro-interactions & motion</ThemedText>
+              <ThemedText type="body" style={{ color: Colors[theme].mutedText, marginTop: spacing.sm }}>
+                Buttons, cards, and collapsibles now use Reanimated + Moti for subtle depth, scale,
+                and fade transitions.
               </ThemedText>
-              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
-                • Moti-powered buttons, cards, and accordions
-              </ThemedText>
-              <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
-                • Responsive spacing, typography scale, and glass surfaces
-              </ThemedText>
-            </Collapsible>
-          </AnimatedCard>
+              <Collapsible title="See what changed">
+                <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                  • Reanimated 3 + gesture handler installed and configured
+                </ThemedText>
+                <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                  • Moti-powered buttons, cards, and accordions
+                </ThemedText>
+                <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                  • Responsive spacing, typography scale, and glass surfaces
+                </ThemedText>
+                <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+                  • Comprehensive theme system with color palette and design tokens
+                </ThemedText>
+              </Collapsible>
+            </AnimatedCard>
+          </AnimatedContainer>
 
-          <AnimatedCard delay={240}>
-            <ThemedText type="headline">Responsive examples</ThemedText>
-            <View style={styles.pillRow}>
-              <Pill text="Dynamic spacing" />
-              <Pill text="Responsive typography" />
-              <Pill text="Tablet-friendly cards" />
+          {/* Button Variants Demo */}
+          <AnimatedContainer animation="slideUp" delay={600}>
+            <AnimatedCard>
+              <ThemedText type="headline" style={{ marginBottom: spacing.md }}>
+                Button Variants
+              </ThemedText>
+              <View style={styles.buttonDemoContainer}>
+                <AnimatedButton label="Primary" variant="primary" size="md" onPress={() => {}} />
+                <AnimatedButton label="Secondary" variant="secondary" size="md" onPress={() => {}} />
+                <AnimatedButton label="Outline" variant="outline" size="md" onPress={() => {}} />
+                <AnimatedButton label="Ghost" variant="ghost" size="md" onPress={() => {}} />
+              </View>
+              <ThemedText type="body" style={{ color: Colors[theme].mutedText, marginTop: spacing.md }}>
+                Try tapping the buttons to feel the haptic feedback and smooth animations!
+              </ThemedText>
+            </AnimatedCard>
+          </AnimatedContainer>
+
+          {/* Responsive Pills */}
+          <AnimatedContainer animation="fadeIn" delay={700}>
+            <AnimatedCard>
+              <ThemedText type="headline">Responsive examples</ThemedText>
+              <View style={styles.pillRow}>
+                <Pill text="Dynamic spacing" />
+                <Pill text="Responsive typography" />
+                <Pill text="Tablet-friendly cards" />
+              </View>
+              <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
+                Resize the simulator to see adaptive padding, type scales, and layout shifts tuned for
+                comfort on any device.
+              </ThemedText>
+            </AnimatedCard>
+          </AnimatedContainer>
+
+          {/* Safety Notice */}
+          <AnimatedContainer animation="fadeIn" delay={800}>
+            <View style={styles.safetyNotice}>
+              <ThemedText type="footnote" style={{ color: Colors[theme].mutedText, textAlign: 'center' }}>
+                Safety first: Sturdy is coaching, not therapy. Crisis? In the US, call 988 or text 741741.
+              </ThemedText>
             </View>
-            <ThemedText type="body" style={{ color: Colors[theme].mutedText }}>
-              Resize the simulator to see adaptive padding, type scales, and layout shifts tuned for
-              comfort on any device.
-            </ThemedText>
-          </AnimatedCard>
-
-          <MotiView
-            from={{ opacity: 0, translateY: 10 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ delay: 320 }}
-          >
-            <ThemedText type="footnote" style={{ color: Colors[theme].mutedText, textAlign: 'center' }}>
-              Safety first: Sturdy is coaching, not therapy. Crisis? In the US, call 988 or text 741741.
-            </ThemedText>
-          </MotiView>
+          </AnimatedContainer>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
 
-function Badge({ text }: { text: string }) {
+function Badge({ text, color }: { text: string; color?: string }) {
   const theme = useColorScheme() ?? 'light';
   return (
     <ThemedView
       variant="glass"
       radius="pill"
       style={{
-        paddingHorizontal: Spacing.lg,
-        paddingVertical: Spacing.sm,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
         borderWidth: 1,
-        borderColor: Colors[theme].border,
+        borderColor: color ?? Colors[theme].border,
       }}
     >
-      <ThemedText type="callout" style={{ color: Colors[theme].mutedText }}>
+      <ThemedText type="callout" style={{ color: color ?? Colors[theme].mutedText }}>
         {text}
       </ThemedText>
     </ThemedView>
@@ -180,39 +236,51 @@ function Pill({ text }: { text: string }) {
 
 const styles = StyleSheet.create({
   heroCard: {
-    borderRadius: 20,
-    padding: Spacing.xl,
+    borderRadius: radius.xl,
+    padding: spacing.xl,
     overflow: 'hidden',
-    gap: Spacing.md,
+    gap: spacing.md,
   },
   heroHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: spacing.sm,
   },
   heroTitle: {
-    marginTop: Spacing.sm,
+    marginTop: spacing.sm,
   },
   heroCtas: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
   badgesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
-  row: {
-    flexDirection: 'column',
-    gap: Spacing.sm,
+  highlightsContainer: {
+    gap: spacing.md,
+  },
+  highlightCard: {
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  highlightIcon: {
+    fontSize: typography.fontSize['4xl'],
+    marginBottom: spacing.sm,
+  },
+  buttonDemoContainer: {
+    gap: spacing.sm,
   },
   pillRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginVertical: Spacing.sm,
+    gap: spacing.sm,
+    marginVertical: spacing.md,
+  },
+  safetyNotice: {
+    padding: spacing.md,
   },
 });

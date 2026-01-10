@@ -124,11 +124,11 @@ export function AnimatedCard({
       <Pressable onPress={handlePress}>
         <MotiView
           from={{ opacity: 0, translateY: 14, scale: 1 }}
-          animate={({ hovered, pressed }: any) => ({
+          animate={{
             opacity: 1,
             translateY: 0,
-            scale: pressed ? 0.98 : 1,
-          })}
+            scale: 1,
+          }}
           transition={{
             delay,
             type: 'timing',
