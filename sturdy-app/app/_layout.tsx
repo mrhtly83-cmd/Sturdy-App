@@ -2,39 +2,60 @@ import 'react-native-gesture-handler';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { getChildren } from '@/lib/queries';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 function RootLayoutNav() {
-  const { session, loading } = useAuth();
+  const { session, loading, user } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [checkingOnboarding, setCheckingOnboarding] = useState(false);
 
   useEffect(() => {
     if (loading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = segments[0] === 'onboarding';
+
+    async function checkOnboardingStatus() {
+      if (session && user && !inAuthGroup && !inOnboarding) {
+        setCheckingOnboarding(true);
+        try {
+          const children = await getChildren(user.id);
+          if (children.length === 0) {
+            // No children, redirect to onboarding
+            router.replace('/onboarding');
+          }
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+        } finally {
+          setCheckingOnboarding(false);
+        }
+      }
+    }
 
     if (!session && !inAuthGroup) {
       // Redirect to login if not authenticated
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {
-      // Redirect to app if authenticated
-      router.replace('/(tabs)');
+      // Check if onboarding is needed
+      checkOnboardingStatus();
     }
-  }, [session, loading, segments]);
+  }, [session, loading, segments, user]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="onboarding" />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );

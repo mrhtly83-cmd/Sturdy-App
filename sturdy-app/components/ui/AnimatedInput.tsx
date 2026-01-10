@@ -129,8 +129,8 @@ export function AnimatedInput({
             style={[
               styles.input,
               { color: textColor },
-              leftIcon && styles.inputWithLeftIcon,
-              rightIcon && styles.inputWithRightIcon,
+              leftIcon ? styles.inputWithLeftIcon : undefined,
+              rightIcon ? styles.inputWithRightIcon : undefined,
             ]}
             value={value}
             onFocus={handleFocus}
