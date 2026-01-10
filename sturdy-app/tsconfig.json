@@ -1,36 +1,16 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "jsx": "preserve",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "strict": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "incremental": true,
+    "strict": true,
+    "moduleResolution": "bundler",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
+    "**/*. tsx",
+    ". expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }
