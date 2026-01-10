@@ -35,7 +35,7 @@ export default function TabTwoScreen() {
         style={StyleSheet.absoluteFillObject}
       />
       <ScrollView contentContainerStyle={styles.container}>
-        <AnimatedCard variant="glass" radius="lg" shadow="medium">
+        <AnimatedCard variant="glass" radiusSize="lg" shadow="medium">
           <BlurView intensity={40} tint={theme === 'light' ? 'light' : 'dark'} style={styles.header}>
             <View style={styles.headerRow}>
               <View style={{ gap: Spacing.xs }}>
