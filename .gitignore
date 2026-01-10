@@ -47,3 +47,6 @@ lerna-debug.log*
 
 # Git artifacts
 .git/index.lock
+
+# TypeScript build artifacts
+tsconfig.tsbuildinfo
