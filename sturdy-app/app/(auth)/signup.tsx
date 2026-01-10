@@ -21,9 +21,11 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
-  const { signUp, signInWithOAuth, signInWithGoogleOAuth } = useAuth()
+  const { signUp, signInWithOAuth } = useAuth()
+
+  // TODO: Google Sign-In will be added in a future phase with Development Build
+  // Currently removed for Expo Go compatibility
 
   const handleSignup = async () => {
     if (!email || !password || !confirmPassword) {
@@ -63,16 +65,6 @@ export default function SignupScreen() {
 
     if (error) {
       Alert.alert('OAuth Failed', error.message)
-    }
-  }
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true)
-    const { error } = await signInWithGoogleOAuth()
-    setGoogleLoading(false)
-
-    if (error) {
-      Alert.alert('Google Sign-In Failed', error.message)
     }
   }
 
@@ -148,7 +140,7 @@ export default function SignupScreen() {
             <TouchableOpacity
               style={styles.signupButton}
               onPress={handleSignup}
-              disabled={loading || googleLoading}
+              disabled={loading}
             >
               <LinearGradient
                 colors={['#F87171', '#F97316']}
@@ -166,30 +158,7 @@ export default function SignupScreen() {
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <TouchableOpacity
-              style={styles.googleButton}
-              onPress={handleGoogleSignIn}
-              disabled={loading || googleLoading}
-            >
-              <View style={styles.googleButtonContent}>
-                {googleLoading ? (
-                  <ActivityIndicator color="#1F2937" />
-                ) : (
-                  <>
-                    <Text style={styles.googleLogo}>G</Text>
-                    <Text style={styles.googleButtonText}>Sign up with Google</Text>
-                  </>
-                )}
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or try other methods</Text>
+              <Text style={styles.dividerText}>or continue with</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -197,7 +166,7 @@ export default function SignupScreen() {
               <TouchableOpacity
                 style={styles.oauthButton}
                 onPress={() => handleOAuthSignup('apple')}
-                disabled={loading || googleLoading}
+                disabled={loading}
               >
                 <BlurView intensity={40} tint="dark" style={styles.oauthBlur}>
                   <Text style={styles.oauthIcon}></Text>
@@ -217,7 +186,7 @@ export default function SignupScreen() {
               <Text style={styles.loginText}>Already have an account? </Text>
               <TouchableOpacity
                 onPress={() => router.push('/(auth)/login')}
-                disabled={loading || googleLoading}
+                disabled={loading}
               >
                 <Text style={styles.loginLink}>Sign In</Text>
               </TouchableOpacity>
@@ -332,30 +301,6 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 14,
     marginHorizontal: 12,
-  },
-  googleButton: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    marginBottom: 16,
-  },
-  googleButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  googleLogo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4285F4',
-  },
-  googleButtonText: {
-    color: '#1F2937',
-    fontSize: 16,
-    fontWeight: '600',
   },
   oauthContainer: {
     flexDirection: 'row',
