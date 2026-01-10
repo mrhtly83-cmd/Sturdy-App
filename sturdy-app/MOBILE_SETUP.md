@@ -78,7 +78,22 @@ The database schema is already created in your Supabase project. Make sure you h
 
 See `docs/schema.sql` for the complete schema.
 
-### 4. Run the App
+### 4. (Optional) Add Onboarding Video
+
+Enhance the onboarding experience with a video background:
+
+1. Place your video file in `assets/videos/onboarding.mp4`
+2. **Recommended specs:**
+   - Format: MP4 (H.264)
+   - Resolution: 1080p
+   - Size: < 10MB
+   - Duration: 10-30 seconds
+3. Video will loop automatically
+4. Users can toggle mute via top-right button
+
+**Note:** App works perfectly without the video - it shows a gradient fallback. See `assets/videos/README.md` for detailed instructions.
+
+### 5. Run the App
 
 ```bash
 npm start

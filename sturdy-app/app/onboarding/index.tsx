@@ -9,7 +9,7 @@ import { AnimatedInput } from '@/components/ui/AnimatedInput';
 import { AnimatedButton } from '@/components/ui/animated-button';
 import { AnimatedCard } from '@/components/ui/animated-card';
 import { ThemedText } from '@/components/themed-text';
-import { GradientBackground } from '@/components/ui/GradientBackground';
+import { VideoBackground } from '@/components/ui';
 import { useAuth } from '@/lib/auth-context';
 import { createChild } from '@/lib/queries';
 import { NeurotypeType } from '@/lib/types';
@@ -89,9 +89,10 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <GradientBackground />
-      
+    <VideoBackground 
+      videoSource={null} // User needs to add onboarding.mp4 to assets/videos/
+      showMuteToggle={true}
+    >
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={styles.container}
@@ -189,7 +190,7 @@ export default function OnboardingScreen() {
           </AnimatedCard>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </VideoBackground>
   );
 }
 
