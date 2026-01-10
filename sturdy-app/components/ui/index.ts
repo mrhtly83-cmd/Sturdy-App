@@ -13,6 +13,7 @@ export { GradientBackground } from './GradientBackground';
 export { BlurView } from './BlurView';
 export { Collapsible } from './collapsible';
 export { IconSymbol } from './icon-symbol';
+export { default as VideoBackground } from './VideoBackground';
 
 // Re-export types
 export type { ButtonVariant, ButtonSize } from './animated-button';

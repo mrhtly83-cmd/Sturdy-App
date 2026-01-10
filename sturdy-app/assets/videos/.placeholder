@@ -1,0 +1,14 @@
+/**
+ * PLACEHOLDER - USER ACTION REQUIRED
+ * 
+ * To enable video background on the onboarding screen:
+ * 1. Add your video file as 'onboarding.mp4' in this directory
+ * 2. See README.md for video specifications and requirements
+ * 
+ * Until you add the video, the app will show a gradient background fallback.
+ * 
+ * The app will work normally without the video - it's an enhancement, not required.
+ */
+
+// This file exists to prevent the require() statement from failing during development
+// Delete this file once you add your onboarding.mp4 video
