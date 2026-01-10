@@ -8,6 +8,7 @@ All features from the problem statement have been implemented:
 
 ### Core Features
 - ✅ **Authentication** - Email/password signup and login with Supabase
+- ✅ **Google Sign-In** - OAuth authentication with Google (Phase 3)
 - ✅ **Onboarding Flow** - Add first child after signup with date picker and neurotype selection
 - ✅ **Dashboard** - Welcome screen with quick action cards and recent scripts
 - ✅ **SOS Scripts** - Generate AI-powered parenting scripts with OpenAI GPT-4
@@ -62,11 +63,99 @@ OPENAI_API_KEY=sk-your_openai_key_here
 
 # From Supabase project settings > API > service_role key (for API routes)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# Google OAuth Web Client ID (for Google Sign-In)
+GOOGLE_WEB_CLIENT_ID=your_google_web_client_id_here
 ```
 
 **Important:** The `EXPO_PUBLIC_` prefix makes variables available to the client. The `OPENAI_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are for server-side API routes only and should never be exposed to the client.
 
-### 3. Setup Supabase Database
+### 3. Setup Google Sign-In (Optional but Recommended)
+
+Google Sign-In is now integrated into the authentication flow. To enable it:
+
+#### A. Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing project
+3. Enable **Google+ API**
+4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+5. Configure OAuth consent screen if prompted
+6. Create **two** OAuth 2.0 Client IDs:
+   - **Web application** (for Supabase OAuth)
+   - **Android** (if building for Android)
+   - **iOS** (if building for iOS)
+
+#### B. Configure Supabase Google OAuth
+
+1. In Supabase Dashboard, go to **Authentication** → **Providers**
+2. Enable **Google** provider
+3. Add your **Web Client ID** and **Web Client Secret** from Google Console
+4. Add authorized redirect URLs:
+   - `https://twvqpmwlxilfqmvttfjt.supabase.co/auth/v1/callback`
+
+#### C. Update Environment Variables
+
+Add the Web Client ID to your `.env` file:
+
+```env
+GOOGLE_WEB_CLIENT_ID=26234553124-ch542hp71c0qe8rce76alf32vga7lfs4.apps.googleusercontent.com
+```
+
+**Note:** The Google Web Client ID is already hardcoded in `app/_layout.tsx` for development. For production, use environment variables.
+
+#### D. Test Google Sign-In
+
+1. Start the app: `npm start`
+2. Navigate to Login or Signup screen
+3. Tap "Continue with Google" button
+4. Select Google account
+5. Grant permissions
+6. You should be automatically signed in and redirected to the dashboard
+
+#### E. Android/iOS Specific Configuration
+
+**For Android:**
+1. Get SHA-1 certificate fingerprint: `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
+2. Add SHA-1 to Google Cloud Console OAuth client (Android)
+3. Add Android package name (e.g., `com.sturdyapp`)
+
+**For iOS:**
+1. Get iOS URL scheme from Google Cloud Console
+2. Add to `app.json` under `ios.bundleIdentifier`
+3. Configure URL scheme in `app.json`:
+```json
+{
+  "expo": {
+    "ios": {
+      "bundleIdentifier": "com.sturdyapp",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    }
+  }
+}
+```
+
+#### F. Troubleshooting Google Sign-In
+
+**"Sign-in cancelled by user":**
+- User closed the Google Sign-In popup
+- This is normal behavior
+
+**"Google Play Services not available":**
+- Android emulator doesn't have Google Play Services
+- Use a real device or an emulator with Play Store
+
+**"No ID token received from Google":**
+- Check Web Client ID is correct in `app/_layout.tsx`
+- Verify Google OAuth consent screen is published
+- Ensure all OAuth scopes are granted
+
+**"Invalid OAuth client":**
+- Web Client ID doesn't match Google Console
+- Check Supabase Google provider configuration
+- Verify authorized redirect URLs in Google Console
+
+### 4. Setup Supabase Database
 
 The database schema is already created in your Supabase project. Make sure you have:
 
@@ -78,7 +167,7 @@ The database schema is already created in your Supabase project. Make sure you h
 
 See `docs/schema.sql` for the complete schema.
 
-### 4. (Optional) Add Onboarding Video
+### 5. (Optional) Add Onboarding Video
 
 Enhance the onboarding experience with a video background:
 
@@ -93,7 +182,7 @@ Enhance the onboarding experience with a video background:
 
 **Note:** App works perfectly without the video - it shows a gradient fallback. See `assets/videos/README.md` for detailed instructions.
 
-### 5. Run the App
+### 6. Run the App
 
 ```bash
 npm start

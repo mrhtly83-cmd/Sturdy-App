@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { signInWithGoogle, signOutFromGoogle } from './google-auth'
 
 interface AuthContextType {
   session: Session | null
@@ -10,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
   signInWithOAuth: (provider: 'google' | 'apple') => Promise<{ error: any }>
+  signInWithGoogleOAuth: () => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -54,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    // Sign out from Google if user is signed in with Google
+    await signOutFromGoogle()
     await supabase.auth.signOut()
   }
 
@@ -67,6 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
+  const signInWithGoogleOAuth = async () => {
+    const { data, error } = await signInWithGoogle()
+    return { error }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -77,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         signOut,
         signInWithOAuth,
+        signInWithGoogleOAuth,
       }}
     >
       {children}

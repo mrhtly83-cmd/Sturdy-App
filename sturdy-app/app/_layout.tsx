@@ -9,6 +9,13 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { getChildren } from '@/lib/queries';
+import { configureGoogleSignIn } from '@/lib/google-auth';
+
+// Google Sign-In Configuration
+const GOOGLE_WEB_CLIENT_ID = '26234553124-ch542hp71c0qe8rce76alf32vga7lfs4.apps.googleusercontent.com';
+
+// Configure Google Sign-In on app mount
+configureGoogleSignIn(GOOGLE_WEB_CLIENT_ID);
 
 export const unstable_settings = {
   anchor: '(tabs)',
