@@ -8,9 +8,9 @@ import { useFocusEffect } from 'expo-router';
 interface VideoBackgroundProps {
   videoSource: any | null; // require() import, { uri: string }, or null for gradient only
   showMuteToggle?: boolean;
-  gradientColors?: string[];
+  gradientColors?: readonly [string, string, ...string[]];
   children?: React.ReactNode;
-  fallbackGradient?: string[];
+  fallbackGradient?: readonly [string, string, ...string[]];
 }
 
 /**
