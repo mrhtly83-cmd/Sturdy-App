@@ -4,6 +4,8 @@
 
 A clinical-grade, AI-powered parenting assistant designed for parents in crisis moments. Sturdy delivers evidence-based scripts grounded in Attachment Theory, IFS, and modern neuroscience—not another course to complete during a meltdown.
 
+> **📱 Mobile App**: Sturdy is a React Native/Expo mobile application for iOS and Android. See [VERCEL_MIGRATION.md](VERCEL_MIGRATION.md) for deployment information.
+
 ---
 
 ## 🎯 The Problem We Solve
@@ -255,7 +257,7 @@ Free to try. Premium whenever you're ready.
 - **Backend**: Supabase (PostgreSQL + Auth + Real-time)
 - **AI**: OpenAI GPT-4o-mini (with safety guards)
 - **Payments**: Stripe (Weekly/Monthly/Lifetime subscriptions)
-- **Deployment**: EAS Build for iOS/Android
+- **Deployment**: EAS Build for iOS/Android *(Note: NOT Vercel - see [VERCEL_MIGRATION.md](../VERCEL_MIGRATION.md))*
 - **Database**: PostgreSQL with Row Level Security (RLS)
 
 **Setup:**
